@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autofac.Extras.Moq", "src\Autofac.Extras.Moq\Autofac.Extras.Moq.csproj", "{87A53138-12F0-4D07-B85E-734D676D2398}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autofac.Extras.Tests.Moq", "test\Autofac.Extras.Tests.Moq\Autofac.Extras.Tests.Moq.csproj", "{55C8A6C6-1852-44DE-BE39-69C04D4C2584}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87A53138-12F0-4D07-B85E-734D676D2398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87A53138-12F0-4D07-B85E-734D676D2398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87A53138-12F0-4D07-B85E-734D676D2398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87A53138-12F0-4D07-B85E-734D676D2398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55C8A6C6-1852-44DE-BE39-69C04D4C2584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55C8A6C6-1852-44DE-BE39-69C04D4C2584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55C8A6C6-1852-44DE-BE39-69C04D4C2584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55C8A6C6-1852-44DE-BE39-69C04D4C2584}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

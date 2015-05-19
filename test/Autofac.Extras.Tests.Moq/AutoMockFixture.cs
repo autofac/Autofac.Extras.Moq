@@ -23,6 +23,8 @@ namespace Autofac.Extras.Tests.Moq
             public void RunA() { }
         }
 
+        public abstract class AbstractClassA {}
+
         public sealed class TestComponent
         {
             private readonly IServiceA _serviceA;
@@ -40,6 +42,17 @@ namespace Autofac.Extras.Tests.Moq
                 this._serviceB.RunB();
             }
         }
+
+        public sealed class TestComponentRequiringAbstractClassA
+        {
+            public AbstractClassA InstanceOfAbstractClassA { get; set; }
+
+            public TestComponentRequiringAbstractClassA(AbstractClassA abstractClassA)
+            {
+                this.InstanceOfAbstractClassA = abstractClassA;
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -184,6 +197,18 @@ namespace Autofac.Extras.Tests.Moq
         {
             AssertProperties(AutoMock.GetLoose());
             AssertProperties(AutoMock.GetStrict());
+        }
+
+        [Test]
+        public void AbstractDependencyIsFulfilled()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var component = mock.Create<TestComponentRequiringAbstractClassA>();
+                Assert.AreEqual(
+                    mock.Mock<AbstractClassA>().Object,
+                    component.InstanceOfAbstractClassA);
+            }
         }
 
         private static void AssertProperties(AutoMock mock)

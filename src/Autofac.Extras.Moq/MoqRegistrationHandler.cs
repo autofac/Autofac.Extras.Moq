@@ -68,11 +68,7 @@ namespace Autofac.Extras.Moq
                 throw new ArgumentNullException("service");
 
             var typedService = service as TypedService;
-            if (typedService == null ||
-                !typedService.ServiceType.IsInterface ||
-                typedService.ServiceType.IsGenericType && typedService.ServiceType.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-                typedService.ServiceType.IsArray ||
-                typeof(IStartable).IsAssignableFrom(typedService.ServiceType))
+            if (!CanMockService(typedService))
                 return Enumerable.Empty<IComponentRegistration>();
 
             var rb = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService))
@@ -80,6 +76,21 @@ namespace Autofac.Extras.Moq
                 .InstancePerLifetimeScope();
 
             return new[] { rb.CreateRegistration() };
+        }
+
+        private static bool CanMockService(TypedService typedService)
+        {
+            return !(typedService == null ||
+                     !(ServiceIsAbstractOrInterface(typedService)) ||
+                     typedService.ServiceType.IsGenericType &&
+                     typedService.ServiceType.GetGenericTypeDefinition() == typeof (IEnumerable<>) ||
+                     typedService.ServiceType.IsArray ||
+                     typeof (IStartable).IsAssignableFrom(typedService.ServiceType));
+        }
+
+        private static bool ServiceIsAbstractOrInterface(IServiceWithType typedService)
+        {
+            return typedService.ServiceType.IsInterface || typedService.ServiceType.IsAbstract;
         }
 
         public bool IsAdapterForIndividualComponents

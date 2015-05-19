@@ -24,15 +24,12 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security;
-using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
-using Autofac.Core.Diagnostics;
 using Moq;
 
 namespace Autofac.Extras.Moq
@@ -56,7 +53,7 @@ namespace Autofac.Extras.Moq
         /// by the container.
         /// </summary>
         /// <param name="service">The service that was requested.</param>
-        /// <param name="registrationAccessor"></param>
+        /// <param name="registrationAccessor">Not used; required by the interface</param>
         /// <returns>
         /// Registrations for the service.
         /// </returns>
@@ -65,11 +62,15 @@ namespace Autofac.Extras.Moq
             (Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
         {
             if (service == null)
+            {
                 throw new ArgumentNullException("service");
+            }
 
             var typedService = service as TypedService;
-            if (!CanMockService(typedService))
+            if (typedService == null || !CanMockService(typedService))
+            {
                 return Enumerable.Empty<IComponentRegistration>();
+            }
 
             var rb = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService))
                 .As(service)
@@ -78,14 +79,24 @@ namespace Autofac.Extras.Moq
             return new[] { rb.CreateRegistration() };
         }
 
-        private static bool CanMockService(TypedService typedService)
+        private static bool CanMockService(IServiceWithType typedService)
         {
-            return !(typedService == null ||
-                     !(ServiceIsAbstractOrInterface(typedService)) ||
-                     typedService.ServiceType.IsGenericType &&
-                     typedService.ServiceType.GetGenericTypeDefinition() == typeof (IEnumerable<>) ||
-                     typedService.ServiceType.IsArray ||
-                     typeof (IStartable).IsAssignableFrom(typedService.ServiceType));
+            return ServiceIsAbstractOrInterface(typedService) &&
+                   !IsGenericType(typedService) &&
+                   !IsIStartable(typedService);
+        }
+
+        private static bool IsIStartable(IServiceWithType typedService)
+        {
+            return typeof (IStartable).IsAssignableFrom(typedService.ServiceType);
+        }
+
+        private static bool IsGenericType(IServiceWithType typedService)
+        {
+            // We handle generics in general, but we don't handle IEnumerable because that has special
+            // meaning in Autofac
+            return typedService.ServiceType.IsGenericType &&
+                   typedService.ServiceType.GetGenericTypeDefinition() == typeof (IEnumerable<>);
         }
 
         private static bool ServiceIsAbstractOrInterface(IServiceWithType typedService)

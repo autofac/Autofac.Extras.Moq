@@ -82,7 +82,7 @@ namespace Autofac.Extras.Moq
         private static bool CanMockService(IServiceWithType typedService)
         {
             return ServiceIsAbstractOrInterface(typedService) &&
-                   !IsGenericType(typedService) &&
+                   !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService);
         }
 
@@ -91,7 +91,7 @@ namespace Autofac.Extras.Moq
             return typeof (IStartable).IsAssignableFrom(typedService.ServiceType);
         }
 
-        private static bool IsGenericType(IServiceWithType typedService)
+        private static bool IsIEnumerable(IServiceWithType typedService)
         {
             // We handle most generics, but we don't handle IEnumerable because that has special
             // meaning in Autofac

@@ -93,7 +93,7 @@ namespace Autofac.Extras.Moq
 
         private static bool IsGenericType(IServiceWithType typedService)
         {
-            // We handle generics in general, but we don't handle IEnumerable because that has special
+            // We handle most generics, but we don't handle IEnumerable because that has special
             // meaning in Autofac
             return typedService.ServiceType.IsGenericType &&
                    typedService.ServiceType.GetGenericTypeDefinition() == typeof (IEnumerable<>);

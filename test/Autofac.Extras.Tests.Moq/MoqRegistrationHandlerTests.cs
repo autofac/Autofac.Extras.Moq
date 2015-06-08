@@ -14,7 +14,7 @@ namespace Autofac.Extras.Tests.Moq
         private interface ISomethingStartable : IStartable {}
 
         private MoqRegistrationHandler _systemUnderTest;
-        //
+
         [SetUp]
         public void SetUp()
         {

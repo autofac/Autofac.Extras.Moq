@@ -44,7 +44,7 @@ namespace Autofac.Extras.Moq
         [SecurityCritical]
         public MoqRegistrationHandler()
         {
-            var factoryType = typeof(MockRepository);   
+            var factoryType = typeof(MockRepository);
             _createMethod = factoryType.GetMethod("Create", new Type[] { });
         }
 
@@ -59,7 +59,7 @@ namespace Autofac.Extras.Moq
         /// </returns>
         [SecuritySafeCritical]
         public IEnumerable<IComponentRegistration> RegistrationsFor
-            (Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
+        (Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
         {
             if (service == null)
             {
@@ -106,16 +106,20 @@ namespace Autofac.Extras.Moq
 
         public bool IsAdapterForIndividualComponents
         {
-            get { return false; }
+            get
+            {
+                return false;
+            }
         }
-        
+
         /// <summary>
         /// Creates a mock object.
         /// </summary>
         /// <param name="context">The component context.</param>
         /// <param name="typedService">The typed service.</param>
-        /// <returns></returns>
-        [SecuritySafeCritical]
+        /// <returns>
+        /// The mock object from the repository.
+        /// </returns>
         private object CreateMock(IComponentContext context, TypedService typedService)
         {
             var specificCreateMethod =

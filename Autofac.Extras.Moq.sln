@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autofac.Extras.Moq", "src\Autofac.Extras.Moq\Autofac.Extras.Moq.csproj", "{87A53138-12F0-4D07-B85E-734D676D2398}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autofac.Extras.Tests.Moq", "test\Autofac.Extras.Tests.Moq\Autofac.Extras.Tests.Moq.csproj", "{55C8A6C6-1852-44DE-BE39-69C04D4C2584}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autofac.Extras.Moq.Test", "test\Autofac.Extras.Moq.Test\Autofac.Extras.Moq.Test.csproj", "{55C8A6C6-1852-44DE-BE39-69C04D4C2584}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

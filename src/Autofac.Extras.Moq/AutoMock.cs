@@ -25,7 +25,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Security;
 using Autofac.Builder;
 using Autofac.Core;
 using Autofac.Features.ResolveAnything;
@@ -36,20 +35,9 @@ namespace Autofac.Extras.Moq
     /// <summary>
     /// Wrapper around <see cref="Autofac"/> and <see cref="Moq"/>
     /// </summary>
-    [SecurityCritical]
     public class AutoMock : IDisposable
     {
         private bool _disposed;
-
-        /// <summary> 
-        /// <see cref="MockRepository"/> instance responsible for expectations and mocks. 
-        /// </summary>
-        public MockRepository MockRepository { [SecurityCritical]get; [SecurityCritical]private set; }
-
-        /// <summary>
-        /// <see cref="IContainer"/> that handles the component resolution.
-        /// </summary>
-        public IContainer Container { get; private set; }
 
         private AutoMock(MockBehavior behavior)
             : this(new MockRepository(behavior))
@@ -58,29 +46,59 @@ namespace Autofac.Extras.Moq
 
         private AutoMock(MockRepository repository)
         {
-            MockRepository = repository;
+            this.MockRepository = repository;
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(MockRepository);
+            builder.RegisterInstance(this.MockRepository);
             builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
             builder.RegisterSource(new MoqRegistrationHandler());
-            Container = builder.Build();
-            VerifyAll = false;
+            this.Container = builder.Build();
+            this.VerifyAll = false;
         }
 
         /// <summary>
         /// Finalizes an instance of the <see cref="AutoMock"/> class.
         /// </summary>
-        [SecuritySafeCritical]
         ~AutoMock()
         {
-            Dispose(false);
+            this.Dispose(false);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IContainer"/> that handles the component resolution.
+        /// </summary>
+        public IContainer Container { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="MockRepository"/> instance responsible for expectations and mocks.
+        /// </summary>
+        public MockRepository MockRepository { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all mocks are verified.
+        /// </summary>
+        /// <value>
+        /// <see langword="true" /> to verify all mocks; <see langword="false" />
+        /// (default) to verify only mocks marked Verifiable.
+        /// </value>
+        public bool VerifyAll { get; set; }
+
+        /// <summary>
+        /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by a repository.
+        /// </summary>
+        /// <param name="repository">The repository that defines the behavior. </param>
+        /// <returns>
+        /// An <see cref="AutoMock"/> based on the provided <see cref="global::Moq.MockRepository"/>.
+        /// </returns>
+        public static AutoMock GetFromRepository(MockRepository repository)
+        {
+            return new AutoMock(repository);
         }
 
         /// <summary>
         /// Create new <see cref="AutoMock"/> instance with loose mock behavior.
         /// </summary>
-        /// <seealso cref="MockRepository"/>
         /// <returns>Container initialized for loose behavior.</returns>
+        /// <seealso cref="MockRepository"/>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static AutoMock GetLoose()
         {
@@ -99,23 +117,68 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
-        /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by <c>repository</c>.
+        /// Resolve the specified type in the container (register it if needed)
         /// </summary>
-        /// <param name="repository"></param>
-        /// <returns></returns>
-        public static AutoMock GetFromRepository(MockRepository repository)
+        /// <typeparam name="T">Service</typeparam>
+        /// <param name="parameters">Optional parameters</param>
+        /// <returns>The service.</returns>
+        public T Create<T>(params Parameter[] parameters)
         {
-            return new AutoMock(repository);
+            return this.Container.Resolve<T>(parameters);
         }
 
         /// <summary>
         /// Verifies mocks and disposes internal container.
         /// </summary>
-        [SecuritySafeCritical]
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Finds (creating if needed) the actual mock for the provided type
+        /// </summary>
+        /// <typeparam name="T">Type to mock</typeparam>
+        /// <param name="parameters">Optional parameters</param>
+        /// <returns>A mock of type <typeparamref name="T"/>.</returns>
+        public Mock<T> Mock<T>(params Parameter[] parameters)
+            where T : class
+        {
+            var obj = (IMocked<T>)Create<T>(parameters);
+            return obj.Mock;
+        }
+
+        /// <summary>
+        /// Resolve the specified type in the container (register it if needed)
+        /// </summary>
+        /// <typeparam name="TService">The type of service being provided.</typeparam>
+        /// <typeparam name="TImplementation">The implementation of the service.</typeparam>
+        /// <param name="parameters">Optional parameters</param>
+        /// <returns>The service.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
+        public TService Provide<TService, TImplementation>(params Parameter[] parameters)
+        {
+            this.Container.ComponentRegistry.Register(
+                            RegistrationBuilder.ForType<TImplementation>().As<TService>().InstancePerLifetimeScope().CreateRegistration());
+
+            return this.Container.Resolve<TService>(parameters);
+        }
+
+        /// <summary>
+        /// Resolve the specified type in the container (register specified instance if needed)
+        /// </summary>
+        /// <typeparam name="TService">The type of service being provided.</typeparam>
+        /// <param name="instance">The instance to provide.</param>
+        /// <returns>The instance resolved from container.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
+        public TService Provide<TService>(TService instance)
+            where TService : class
+        {
+            this.Container.ComponentRegistry.Register(
+                            RegistrationBuilder.ForDelegate((c, p) => instance).InstancePerLifetimeScope().CreateRegistration());
+
+            return this.Container.Resolve<TService>();
         }
 
         /// <summary>
@@ -129,7 +192,7 @@ namespace Autofac.Extras.Moq
         /// </param>
         private void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!this._disposed)
             {
                 if (disposing)
                 {
@@ -138,82 +201,23 @@ namespace Autofac.Extras.Moq
                     // collected during finalization.
                     try
                     {
-                        if (VerifyAll)
+                        if (this.VerifyAll)
                         {
-                            MockRepository.VerifyAll();
+                            this.MockRepository.VerifyAll();
                         }
                         else
                         {
-                            MockRepository.Verify();
+                            this.MockRepository.Verify();
                         }
                     }
                     finally
                     {
-                        Container.Dispose();
+                        this.Container.Dispose();
                     }
                 }
-                _disposed = true;
+
+                this._disposed = true;
             }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether all mocks are verified.
-        /// </summary>
-        /// <value><c>true</c> to verify all mocks. <c>false</c> (default) to verify only mocks marked Verifiable.</value>
-        public bool VerifyAll { get; set; }
-
-        /// <summary>
-        /// Finds (creating if needed) the actual mock for the provided type
-        /// </summary>
-        /// <typeparam name="T">Type to mock</typeparam>
-        /// <param name="parameters">Optional parameters</param>
-        /// <returns>Mock</returns>
-        public Mock<T> Mock<T>(params Parameter[] parameters) where T : class
-        {
-            var obj = (IMocked<T>)Create<T>(parameters);
-            return obj.Mock;
-        }
-
-        /// <summary>
-        /// Resolve the specified type in the container (register it if needed)
-        /// </summary>
-        /// <typeparam name="T">Service</typeparam>
-        /// <param name="parameters">Optional parameters</param>
-        /// <returns>The service.</returns>
-        public T Create<T>(params Parameter[] parameters)
-        {
-            return Container.Resolve<T>(parameters);
-        }
-
-        /// <summary>
-        /// Resolve the specified type in the container (register it if needed)
-        /// </summary>
-        /// <typeparam name="TService">Service</typeparam>
-        /// <typeparam name="TImplementation">The implementation of the service.</typeparam>
-        /// <param name="parameters">Optional parameters</param>
-        /// <returns>The service.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
-        public TService Provide<TService, TImplementation>(params Parameter[] parameters)
-        {
-            Container.ComponentRegistry.Register(
-                RegistrationBuilder.ForType<TImplementation>().As<TService>().InstancePerLifetimeScope().CreateRegistration());
-
-            return Container.Resolve<TService>(parameters);
-        }
-
-        /// <summary>
-        /// Resolve the specified type in the container (register specified instance if needed)
-        /// </summary>
-        /// <typeparam name="TService">Service</typeparam>
-        /// <returns>The instance resolved from container.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
-        public TService Provide<TService>(TService instance)
-            where TService : class
-        {
-            Container.ComponentRegistry.Register(
-                RegistrationBuilder.ForDelegate((c, p) => instance).InstancePerLifetimeScope().CreateRegistration());
-
-            return Container.Resolve<TService>();
         }
     }
 }

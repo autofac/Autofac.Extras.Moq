@@ -27,25 +27,41 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security;
 using Autofac.Builder;
 using Autofac.Core;
 using Moq;
 
 namespace Autofac.Extras.Moq
 {
-    /// <summary> Resolves unknown interfaces and Mocks using the <see cref="MockRepository"/> from the scope. </summary>
+    /// <summary>
+    /// Resolves unknown interfaces and mocks using the <see cref="MockRepository"/> from the scope.
+    /// </summary>
     internal class MoqRegistrationHandler : IRegistrationSource
     {
         private readonly MethodInfo _createMethod;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
         /// </summary>
-        [SecurityCritical]
         public MoqRegistrationHandler()
         {
             var factoryType = typeof(MockRepository);
-            _createMethod = factoryType.GetMethod("Create", new Type[] { });
+            this._createMethod = factoryType.GetMethod("Create", new Type[] { });
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the registrations provided by
+        /// this source are 1:1 adapters on top of other components (i.e. like Meta, Func or Owned).
+        /// </summary>
+        /// <value>
+        /// Always returns <see langword="false" />.
+        /// </value>
+        public bool IsAdapterForIndividualComponents
+        {
+            get
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -57,13 +73,16 @@ namespace Autofac.Extras.Moq
         /// <returns>
         /// Registrations for the service.
         /// </returns>
-        [SecuritySafeCritical]
-        public IEnumerable<IComponentRegistration> RegistrationsFor
-        (Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown if <paramref name="service" /> is <see langword="null" />.
+        /// </exception>
+        public IEnumerable<IComponentRegistration> RegistrationsFor(
+            Service service,
+            Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
         {
             if (service == null)
             {
-                throw new ArgumentNullException("service");
+                throw new ArgumentNullException(nameof(service));
             }
 
             var typedService = service as TypedService;
@@ -72,7 +91,7 @@ namespace Autofac.Extras.Moq
                 return Enumerable.Empty<IComponentRegistration>();
             }
 
-            var rb = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService))
+            var rb = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
                 .As(service)
                 .InstancePerLifetimeScope();
 
@@ -86,30 +105,22 @@ namespace Autofac.Extras.Moq
                    !IsIStartable(typedService);
         }
 
-        private static bool IsIStartable(IServiceWithType typedService)
-        {
-            return typeof (IStartable).IsAssignableFrom(typedService.ServiceType);
-        }
-
         private static bool IsIEnumerable(IServiceWithType typedService)
         {
             // We handle most generics, but we don't handle IEnumerable because that has special
             // meaning in Autofac
-            return typedService.ServiceType.IsGenericType &&
-                   typedService.ServiceType.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+            return typedService.ServiceType.GetTypeInfo().IsGenericType &&
+                   typedService.ServiceType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>);
+        }
+
+        private static bool IsIStartable(IServiceWithType typedService)
+        {
+            return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
         }
 
         private static bool ServiceIsAbstractOrInterface(IServiceWithType typedService)
         {
-            return typedService.ServiceType.IsInterface || typedService.ServiceType.IsAbstract;
-        }
-
-        public bool IsAdapterForIndividualComponents
-        {
-            get
-            {
-                return false;
-            }
+            return typedService.ServiceType.GetTypeInfo().IsInterface || typedService.ServiceType.GetTypeInfo().IsAbstract;
         }
 
         /// <summary>
@@ -122,8 +133,7 @@ namespace Autofac.Extras.Moq
         /// </returns>
         private object CreateMock(IComponentContext context, TypedService typedService)
         {
-            var specificCreateMethod =
-                        _createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
+            var specificCreateMethod = this._createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
             var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null);
             return mock.Object;
         }

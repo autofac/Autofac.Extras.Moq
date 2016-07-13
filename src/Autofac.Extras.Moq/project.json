@@ -1,39 +1,62 @@
 {
-  "copyright": "Copyright (c) 2014 Autofac Project",
-  "authors": [ "Travis Illig", "Alex Meyer-Gleaves" ],
-  "title": "Autofac Extras: Moq Mocking Support ",
-  "description": "This extension provides support for automocking and creation of mock objects in Moq using Autofac.",
-  "name": "Autofac.Extras.Moq",
-  "version": "4.0.0",
   "buildOptions": {
+    "additionalArguments": [
+      "/ruleset:../../build/Analyzers.ruleset"
+    ],
     "keyFile": "../../Autofac.snk",
-    "preserveCompilationContext": true,
-    "warningsAsErrors": true
+    "nowarn": [
+      "CS1591"
+    ],
+    "warningsAsErrors": true,
+    "xmlDoc": true
+  },
+  "dependencies": {
+    "Autofac": "4.0.0-rc3-*",
+    "Moq": "4.6.25-alpha",
+    "Autofac": "4.0.0-rc3-*",
+    "Microsoft.CodeAnalysis.FxCopAnalyzers": {
+      "type": "build",
+      "version": "1.1.0"
+    },
+    "StyleCop.Analyzers": {
+      "type": "build",
+      "version": "1.0.0"
+    },
+    "System.Runtime.Analyzers": {
+      "type": "build",
+      "version": "1.1.0"
+    }
+  },
+  "description": "Autofac extension for automocking and creation of mock objects in Moq.",
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Diagnostics.TraceSource": "4.0.0"
+      },
+      "imports": "dotnet5.6"
+    }
   },
   "packOptions": {
-    "requireLicenseAcceptance": false,
-    "tags": [ "autofac", "di", "ioc", "dependencyinjection", "moq" ],
-    "iconUrl": "https://raw.githubusercontent.com/autofac/Documentation/master/docs/logo.png",
-    "licenseUrl": "https://raw.githubusercontent.com/autofac/Autofac.Extras.Moq/develop/LICENSE",
-    "projectUrl": "https://github.com/autofac/Autofac.Extras.Moq",
+    "iconUrl": "https://cloud.githubusercontent.com/assets/1156571/13684110/16b8f152-e6bf-11e5-84ae-22c66c6d351a.png",
+    "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
+    "owners": [
+      "Autofac Contributors"
+    ],
+    "projectUrl": "http://autofac.org",
     "repository": {
       "type": "git",
       "url": "https://github.com/autofac/Autofac.Extras.Moq"
-    }
-  },
-
-  "dependencies": {
-    "Autofac": "4.0.0-rc3-309",
-    "Moq": "4.6.25-alpha"
-  },
-
-  "frameworks": {
-    "netstandard1.3": {
-      "imports": "dotnet5.6",
-      "dependencies": {
-        "System.Diagnostics.TraceSource": "4.0.0"
-      }
     },
-    "net451": {}
-  }
+    "requireLicenseAcceptance": false,
+    "summary": "The Moq integration package allows you to automatically create mock dependencies for both concrete and mock abstract instances in unit tests using an Autofac container. ",
+    "tags": [
+      "autofac",
+      "di",
+      "ioc",
+      "dependencyinjection",
+      "moq"
+    ]
+  },
+  "version": "4.0.0"
 }

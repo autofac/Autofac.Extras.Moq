@@ -5,6 +5,16 @@ namespace Autofac.Extras.Moq.Test
 {
     public class AutoMockFixture
     {
+        public interface IServiceA
+        {
+            void RunA();
+        }
+
+        public interface IServiceB
+        {
+            void RunB();
+        }
+
         [Fact]
         public void AbstractDependencyIsFulfilled()
         {
@@ -191,16 +201,6 @@ namespace Autofac.Extras.Moq.Test
         {
             mock.Mock<IServiceB>().Setup(x => x.RunB()).Verifiable();
             mock.Mock<IServiceA>().Setup(x => x.RunA()).Verifiable();
-        }
-
-        public interface IServiceA
-        {
-            void RunA();
-        }
-
-        public interface IServiceB
-        {
-            void RunB();
         }
 
         public abstract class AbstractClassA

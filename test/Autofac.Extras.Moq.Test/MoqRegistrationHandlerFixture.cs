@@ -10,7 +10,19 @@ namespace Autofac.Extras.Moq.Test
 
         public MoqRegistrationHandlerFixture()
         {
-            _systemUnderTest = new MoqRegistrationHandler();
+            this._systemUnderTest = new MoqRegistrationHandler();
+        }
+
+        private interface ISomethingStartable : IStartable
+        {
+        }
+
+        private interface ITestGenericInterface<T>
+        {
+        }
+
+        private interface ITestInterface
+        {
         }
 
         [Fact]
@@ -24,8 +36,8 @@ namespace Autofac.Extras.Moq.Test
         [Fact]
         public void RegistrationForNonTypedService_IsNotHandled()
         {
-            var registrations = _systemUnderTest.RegistrationsFor(
-                new KeyedService(serviceKey: "key", serviceType: typeof (string)),
+            var registrations = this._systemUnderTest.RegistrationsFor(
+                new KeyedService(serviceKey: "key", serviceType: typeof(string)),
                 registrationAccessor: null);
 
             Assert.Empty(registrations);
@@ -81,21 +93,9 @@ namespace Autofac.Extras.Moq.Test
 
         private IEnumerable<IComponentRegistration> GetRegistrations<T>()
         {
-            return _systemUnderTest.RegistrationsFor(
-                new TypedService(typeof (T)),
+            return this._systemUnderTest.RegistrationsFor(
+                new TypedService(typeof(T)),
                 registrationAccessor: null);
-        }
-
-        private interface ISomethingStartable : IStartable
-        {
-        }
-
-        private interface ITestGenericInterface<T>
-        {
-        }
-
-        private interface ITestInterface
-        {
         }
 
         private abstract class TestAbstractClass

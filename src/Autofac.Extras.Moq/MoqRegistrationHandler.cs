@@ -95,13 +95,13 @@ namespace Autofac.Extras.Moq
         {
             // We handle most generics, but we don't handle IEnumerable because that has special
             // meaning in Autofac
-            return typedService.ServiceType.IsGenericType &&
-                   typedService.ServiceType.GetGenericTypeDefinition() == typeof (IEnumerable<>);
+            return typedService.ServiceType.GetTypeInfo().IsGenericType &&
+                   typedService.ServiceType.GetTypeInfo().GetGenericTypeDefinition() == typeof (IEnumerable<>);
         }
 
         private static bool ServiceIsAbstractOrInterface(IServiceWithType typedService)
         {
-            return typedService.ServiceType.IsInterface || typedService.ServiceType.IsAbstract;
+            return typedService.ServiceType.GetTypeInfo().IsInterface || typedService.ServiceType.GetTypeInfo().IsAbstract;
         }
 
         public bool IsAdapterForIndividualComponents

@@ -1,0 +1,39 @@
+{
+  "copyright": "Copyright (c) 2014 Autofac Project",
+  "authors": [ "Travis Illig", "Alex Meyer-Gleaves" ],
+  "title": "Autofac Extras: Moq Mocking Support ",
+  "description": "This extension provides support for automocking and creation of mock objects in Moq using Autofac.",
+  "name": "Autofac.Extras.Moq",
+  "version": "4.0.0",
+  "buildOptions": {
+    "keyFile": "../../Autofac.snk",
+    "preserveCompilationContext": true,
+    "warningsAsErrors": true
+  },
+  "packOptions": {
+    "requireLicenseAcceptance": false,
+    "tags": [ "autofac", "di", "ioc", "dependencyinjection", "moq" ],
+    "iconUrl": "https://raw.githubusercontent.com/autofac/Documentation/master/docs/logo.png",
+    "licenseUrl": "https://raw.githubusercontent.com/autofac/Autofac.Extras.Moq/develop/LICENSE",
+    "projectUrl": "https://github.com/autofac/Autofac.Extras.Moq",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/autofac/Autofac.Extras.Moq"
+    }
+  },
+
+  "dependencies": {
+    "Autofac": "4.0.0-rc3-309",
+    "Moq": "4.6.25-alpha"
+  },
+
+  "frameworks": {
+    "netstandard1.3": {
+      "imports": "dotnet5.6",
+      "dependencies": {
+        "System.Diagnostics.TraceSource": "4.0.0"
+      }
+    },
+    "net451": {}
+  }
+}

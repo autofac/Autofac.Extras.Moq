@@ -1,33 +1,26 @@
-environment:
-  package_semantic_version: 4.0.0
-  assembly_semantic_version: 4.0.0
+version: 4.0.0.{build}
 
-version: $(package_semantic_version).{build}
+configuration: Release
 
-assembly_info:
-  patch: true
-  file: '**\AssemblyInfo.*'
-  assembly_version: '$(assembly_semantic_version).0'
-  assembly_file_version: '$(appveyor_build_version)'
-  assembly_informational_version: '$(package_semantic_version)-CI-{build}'
+nuget:
+  disable_publish_on_pr: true
 
-before_build:
-  - dotnet --info
-  - dotnet restore
+clone_depth: 1
 
-test_script:
-  - dotnet test test/Autofac.Extras.Moq.Test
+test: off
 
-after_test:
-  - dotnet pack -c Release src/Autofac.Extras.Moq
-    
+build_script:
+- ps: .\build.ps1
+
 artifacts:
-  - path: 'src\Autofac.Extras.Moq\bin\Release\*.nupkg'
+- path: artifacts\packages\**\*.nupkg
+  name: MyGet
 
 deploy:
-  - provider: NuGet
-    server: https://www.myget.org/F/autofac/api/v2/package
-    api_key:
-      secure: rCUEY75fXN0wxtMy6QL4jCrLdaYbxIBzIXWeN+wEu/XDpyqimzreOc5AH5jMd5ah
-    skip_symbols: false
-    symbol_server: https://nuget.symbolsource.org/MyGet/autofac
+- provider: NuGet
+  server: https://www.myget.org/F/autofac/api/v2/package
+  api_key:
+    secure: rCUEY75fXN0wxtMy6QL4jCrLdaYbxIBzIXWeN+wEu/XDpyqimzreOc5AH5jMd5ah
+  skip_symbols: false
+  symbol_server: https://www.myget.org/F/autofac/symbols/api/v2/package
+  artifact: MyGet

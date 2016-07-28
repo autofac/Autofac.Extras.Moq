@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "Autofac": "4.0.0-rc3-*",
-    "Moq": "4.6.25-alpha",
+    "Moq": "4.6.36-alpha",
     "Autofac": "4.0.0-rc3-*",
     "Microsoft.CodeAnalysis.FxCopAnalyzers": {
       "type": "build",
@@ -30,12 +30,7 @@
   "description": "Autofac extension for automocking and creation of mock objects in Moq.",
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Diagnostics.TraceSource": "4.0.0"
-      },
-      "imports": "dotnet5.6"
-    }
+    "netstandard1.3": {}
   },
   "packOptions": {
     "iconUrl": "https://cloud.githubusercontent.com/assets/1156571/13684110/16b8f152-e6bf-11e5-84ae-22c66c6d351a.png",

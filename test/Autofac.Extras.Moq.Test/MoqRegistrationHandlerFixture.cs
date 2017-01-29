@@ -26,9 +26,17 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegistrationForConcreteClass_IsNotHandled()
+        public void RegistrationForConcreteClass_IsHandled()
         {
             var registrations = GetRegistrations<TestConcreteClass>();
+
+            Assert.NotEmpty(registrations);
+        }
+
+        [Fact]
+        public void RegistrationForSealedConcreteClass_IsNotHandled()
+        {
+            var registrations = GetRegistrations<TestSealedConcreteClass>();
 
             Assert.Empty(registrations);
         }
@@ -103,6 +111,10 @@ namespace Autofac.Extras.Moq.Test
         }
 
         private class TestConcreteClass
+        {
+        }
+
+        private sealed class TestSealedConcreteClass
         {
         }
     }

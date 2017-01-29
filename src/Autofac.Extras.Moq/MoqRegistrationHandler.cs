@@ -100,7 +100,7 @@ namespace Autofac.Extras.Moq
 
         private static bool CanMockService(IServiceWithType typedService)
         {
-            return ServiceIsAbstractOrInterface(typedService) &&
+            return ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
                    !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService);
         }
@@ -118,9 +118,13 @@ namespace Autofac.Extras.Moq
             return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
         }
 
-        private static bool ServiceIsAbstractOrInterface(IServiceWithType typedService)
+        private static bool ServiceIsAbstractOrNonSealedOrInterface(IServiceWithType typedService)
         {
-            return typedService.ServiceType.GetTypeInfo().IsInterface || typedService.ServiceType.GetTypeInfo().IsAbstract;
+            var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
+
+            return serverTypeInfo.IsInterface
+                || (serverTypeInfo.IsClass && !serverTypeInfo.IsSealed)
+                || serverTypeInfo.IsAbstract;
         }
 
         /// <summary>

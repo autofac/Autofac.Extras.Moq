@@ -87,7 +87,7 @@ namespace Autofac.Extras.Moq
         /// </summary>
         /// <param name="repository">The repository that defines the behavior. </param>
         /// <returns>
-        /// An <see cref="AutoMock"/> based on the provided <see cref="global::Moq.MockRepository"/>.
+        /// An <see cref="AutoMock"/> based on the provided <see cref="MockRepository"/>.
         /// </returns>
         public static AutoMock GetFromRepository(MockRepository repository)
         {

@@ -2,6 +2,10 @@ version: 4.1.0.{build}
 
 configuration: Release
 
+environment:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  NUGET_XMLDOC_MODE: skip
+
 nuget:
   disable_publish_on_pr: true
 

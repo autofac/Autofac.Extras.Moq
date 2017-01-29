@@ -11,9 +11,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Autofac": "4.0.0-rc3-*",
-    "Moq": "4.6.36-alpha",
-    "Autofac": "4.0.0-rc3-*",
+    "Autofac": "4.0.1",
+    "Moq": "4.6.38-alpha",
     "Microsoft.CodeAnalysis.FxCopAnalyzers": {
       "type": "build",
       "version": "1.1.0"
@@ -29,7 +28,7 @@
   },
   "description": "Autofac extension for automocking and creation of mock objects in Moq.",
   "frameworks": {
-    "net451": {},
+    "net45": {},
     "netstandard1.3": {}
   },
   "packOptions": {
@@ -54,5 +53,5 @@
       "moq"
     ]
   },
-  "version": "4.1.0-rc3-*"
+  "version": "4.1.0-rc4-*"
 }

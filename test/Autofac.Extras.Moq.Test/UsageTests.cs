@@ -89,33 +89,33 @@ namespace Autofac.Extras.Moq.Test
             mock.Object.SomeMethod();
             mock.VerifyAll();
         }
-    }
 
-    public abstract class SomeAbstractClass
-    {
-        // ReSharper disable once VirtualMemberNeverOverridden.Global
-        public virtual void SomeMethod()
+        public abstract class SomeAbstractClass
         {
-            throw new NotImplementedException();
+            // ReSharper disable once VirtualMemberNeverOverridden.Global
+            public virtual void SomeMethod()
+            {
+                throw new NotImplementedException();
+            }
         }
-    }
 
-    // ReSharper disable once ClassNeverInstantiated.Global
-    public class SomeClass : SomeAbstractClass
-    {
-    }
-
-    public class SomeBaseClassWithVirtualMethod
-    {
-        // ReSharper disable once VirtualMemberNeverOverridden.Global
-        public virtual void SomeMethod()
+        // ReSharper disable once ClassNeverInstantiated.Global
+        public class SomeClass : SomeAbstractClass
         {
-            throw new NotImplementedException();
         }
-    }
 
-    // ReSharper disable once ClassNeverInstantiated.Global
-    public class SomeClassWithVirtualMethod : SomeBaseClassWithVirtualMethod
-    {
+        public class SomeBaseClassWithVirtualMethod
+        {
+            // ReSharper disable once VirtualMemberNeverOverridden.Global
+            public virtual void SomeMethod()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Global
+        public class SomeClassWithVirtualMethod : SomeBaseClassWithVirtualMethod
+        {
+        }
     }
 }

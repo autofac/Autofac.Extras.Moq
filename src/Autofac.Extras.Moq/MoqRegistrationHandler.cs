@@ -38,15 +38,18 @@ namespace Autofac.Extras.Moq
     /// </summary>
     internal class MoqRegistrationHandler : IRegistrationSource
     {
+        private readonly IList<Type> _createdServiceTypes;
         private readonly MethodInfo _createMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
         /// </summary>
-        public MoqRegistrationHandler()
+        /// <param name="createdServiceTypes">A list of root services that have been created.</param>
+        public MoqRegistrationHandler(IList<Type> createdServiceTypes)
         {
+            _createdServiceTypes = createdServiceTypes;
             var factoryType = typeof(MockRepository);
-            this._createMethod = factoryType.GetMethod("Create", new Type[] { });
+            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[] { });
         }
 
         /// <summary>
@@ -56,13 +59,7 @@ namespace Autofac.Extras.Moq
         /// <value>
         /// Always returns <see langword="false" />.
         /// </value>
-        public bool IsAdapterForIndividualComponents
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsAdapterForIndividualComponents => false;
 
         /// <summary>
         /// Retrieve a registration for an unregistered service, to be used
@@ -98,9 +95,10 @@ namespace Autofac.Extras.Moq
             return new[] { rb.CreateRegistration() };
         }
 
-        private static bool CanMockService(IServiceWithType typedService)
+        private bool CanMockService(IServiceWithType typedService)
         {
-            return ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
+            return !_createdServiceTypes.Contains(typedService.ServiceType) &&
+                   ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
                    !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService);
         }
@@ -123,8 +121,8 @@ namespace Autofac.Extras.Moq
             var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
 
             return serverTypeInfo.IsInterface
-                || (serverTypeInfo.IsClass && !serverTypeInfo.IsSealed)
-                || serverTypeInfo.IsAbstract;
+                || serverTypeInfo.IsAbstract
+                || (serverTypeInfo.IsClass && !serverTypeInfo.IsSealed);
         }
 
         /// <summary>

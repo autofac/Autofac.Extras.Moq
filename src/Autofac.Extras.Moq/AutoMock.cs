@@ -24,6 +24,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Autofac.Builder;
 using Autofac.Core;
@@ -39,6 +40,8 @@ namespace Autofac.Extras.Moq
     {
         private bool _disposed;
 
+        private readonly List<Type> _createdServiceTypes = new List<Type>();
+
         private AutoMock(MockBehavior behavior)
             : this(new MockRepository(behavior))
         {
@@ -50,7 +53,7 @@ namespace Autofac.Extras.Moq
             var builder = new ContainerBuilder();
             builder.RegisterInstance(this.MockRepository);
             builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
-            builder.RegisterSource(new MoqRegistrationHandler());
+            builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes));
             this.Container = builder.Build();
             this.VerifyAll = false;
         }
@@ -124,7 +127,7 @@ namespace Autofac.Extras.Moq
         /// <returns>The service.</returns>
         public T Create<T>(params Parameter[] parameters)
         {
-            return this.Container.Resolve<T>(parameters);
+            return Create<T>(false, parameters);
         }
 
         /// <summary>
@@ -145,7 +148,7 @@ namespace Autofac.Extras.Moq
         public Mock<T> Mock<T>(params Parameter[] parameters)
             where T : class
         {
-            var obj = (IMocked<T>)Create<T>(parameters);
+            var obj = (IMocked<T>)Create<T>(true, parameters);
             return obj.Mock;
         }
 
@@ -179,6 +182,14 @@ namespace Autofac.Extras.Moq
                             RegistrationBuilder.ForDelegate((c, p) => instance).InstancePerLifetimeScope().CreateRegistration());
 
             return this.Container.Resolve<TService>();
+        }
+
+        private T Create<T>(bool isMock, params Parameter[] parameters)
+        {
+            if (!isMock && !_createdServiceTypes.Contains(typeof(T)))
+                _createdServiceTypes.Add(typeof(T));
+
+            return this.Container.Resolve<T>(parameters);
         }
 
         /// <summary>

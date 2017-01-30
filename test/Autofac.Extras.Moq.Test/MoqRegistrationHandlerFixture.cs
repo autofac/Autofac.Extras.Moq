@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Autofac.Core;
 using Xunit;
 
@@ -6,23 +7,11 @@ namespace Autofac.Extras.Moq.Test
 {
     public class MoqRegistrationHandlerFixture
     {
-        private MoqRegistrationHandler _systemUnderTest;
+        private readonly MoqRegistrationHandler _systemUnderTest;
 
         public MoqRegistrationHandlerFixture()
         {
-            this._systemUnderTest = new MoqRegistrationHandler();
-        }
-
-        private interface ISomethingStartable : IStartable
-        {
-        }
-
-        private interface ITestGenericInterface<T>
-        {
-        }
-
-        private interface ITestInterface
-        {
+            this._systemUnderTest = new MoqRegistrationHandler(new List<Type>());
         }
 
         [Fact]
@@ -31,6 +20,21 @@ namespace Autofac.Extras.Moq.Test
             var registrations = GetRegistrations<TestConcreteClass>();
 
             Assert.NotEmpty(registrations);
+        }
+
+        [Fact]
+        public void RegistrationForCreatedType_IsNotHandled()
+        {
+            var createdServiceTypes = new List<Type> { typeof(TestConcreteClass) };
+            var handler = new MoqRegistrationHandler(createdServiceTypes);
+            var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), null);
+
+            Assert.Empty(registrations);
+
+            createdServiceTypes.Add(typeof(TestAbstractClass));
+            registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), null);
+
+            Assert.Empty(registrations);
         }
 
         [Fact]
@@ -45,8 +49,8 @@ namespace Autofac.Extras.Moq.Test
         public void RegistrationForNonTypedService_IsNotHandled()
         {
             var registrations = this._systemUnderTest.RegistrationsFor(
-                new KeyedService(serviceKey: "key", serviceType: typeof(string)),
-                registrationAccessor: null);
+                new KeyedService("key", typeof(string)),
+                null);
 
             Assert.Empty(registrations);
         }
@@ -101,9 +105,19 @@ namespace Autofac.Extras.Moq.Test
 
         private IEnumerable<IComponentRegistration> GetRegistrations<T>()
         {
-            return this._systemUnderTest.RegistrationsFor(
-                new TypedService(typeof(T)),
-                registrationAccessor: null);
+            return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), null);
+        }
+
+        private interface ISomethingStartable : IStartable
+        {
+        }
+
+        private interface ITestGenericInterface<T>
+        {
+        }
+
+        private interface ITestInterface
+        {
         }
 
         private abstract class TestAbstractClass

@@ -5,16 +5,6 @@ namespace Autofac.Extras.Moq.Test
 {
     public class AutoMockFixture
     {
-        public interface IServiceA
-        {
-            void RunA();
-        }
-
-        public interface IServiceB
-        {
-            void RunB();
-        }
-
         [Fact]
         public void AbstractDependencyIsFulfilled()
         {
@@ -24,6 +14,18 @@ namespace Autofac.Extras.Moq.Test
                 Assert.Equal(
                     mock.Mock<AbstractClassA>().Object,
                     component.InstanceOfAbstractClassA);
+            }
+        }
+
+        [Fact]
+        public void RegularClassDependencyIsFulfilled()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var component = mock.Create<TestComponentRequiringClassA>();
+                Assert.Equal(
+                    mock.Mock<ClassA>().Object,
+                    component.InstanceOfClassA);
             }
         }
 
@@ -203,10 +205,27 @@ namespace Autofac.Extras.Moq.Test
             mock.Mock<IServiceA>().Setup(x => x.RunA()).Verifiable();
         }
 
+        public interface IServiceA
+        {
+            void RunA();
+        }
+
+        public interface IServiceB
+        {
+            void RunB();
+        }
+
         public abstract class AbstractClassA
         {
         }
 
+        // ReSharper disable once ClassNeverInstantiated.Global
+        public class ClassA : AbstractClassA
+        {
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Global
+        // ReSharper disable once MemberCanBePrivate.Global
         public class ServiceA : IServiceA
         {
             public void RunA()
@@ -214,6 +233,8 @@ namespace Autofac.Extras.Moq.Test
             }
         }
 
+        // ReSharper disable once ClassNeverInstantiated.Global
+        // ReSharper disable once MemberCanBePrivate.Global
         public sealed class TestComponent
         {
             private readonly IServiceA _serviceA;
@@ -233,6 +254,8 @@ namespace Autofac.Extras.Moq.Test
             }
         }
 
+        // ReSharper disable once ClassNeverInstantiated.Global
+        // ReSharper disable once MemberCanBePrivate.Global
         public sealed class TestComponentRequiringAbstractClassA
         {
             public TestComponentRequiringAbstractClassA(AbstractClassA abstractClassA)
@@ -240,7 +263,19 @@ namespace Autofac.Extras.Moq.Test
                 this.InstanceOfAbstractClassA = abstractClassA;
             }
 
-            public AbstractClassA InstanceOfAbstractClassA { get; set; }
+            public AbstractClassA InstanceOfAbstractClassA { get; }
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Global
+        // ReSharper disable once MemberCanBePrivate.Global
+        public sealed class TestComponentRequiringClassA
+        {
+            public TestComponentRequiringClassA(ClassA classA)
+            {
+                this.InstanceOfClassA = classA;
+            }
+
+            public ClassA InstanceOfClassA { get; }
         }
     }
 }

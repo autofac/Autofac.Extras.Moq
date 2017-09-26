@@ -29,6 +29,7 @@ using System.Linq;
 using System.Reflection;
 using Autofac.Builder;
 using Autofac.Core;
+using Autofac.Features.OwnedInstances;
 using Moq;
 
 namespace Autofac.Extras.Moq
@@ -100,7 +101,25 @@ namespace Autofac.Extras.Moq
             return !_createdServiceTypes.Contains(typedService.ServiceType) &&
                    ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
                    !IsIEnumerable(typedService) &&
-                   !IsIStartable(typedService);
+                   !IsIStartable(typedService) &&
+                   !IsLazy(typedService) &&
+                   !IsOwned(typedService);
+        }
+
+        private static bool IsLazy(IServiceWithType typedService)
+        {
+            // We handle most generics, but we don't handle Lazy because that has special
+            // meaning in Autofac
+            return typedService.ServiceType.GetTypeInfo().IsGenericType &&
+                   typedService.ServiceType.GetTypeInfo().GetGenericTypeDefinition() == typeof(Lazy<>);
+        }
+
+        private static bool IsOwned(IServiceWithType typedService)
+        {
+            // We handle most generics, but we don't handle Owned because that has special
+            // meaning in Autofac
+            return typedService.ServiceType.GetTypeInfo().IsGenericType &&
+                   typedService.ServiceType.GetTypeInfo().GetGenericTypeDefinition() == typeof(Owned<>);
         }
 
         private static bool IsIEnumerable(IServiceWithType typedService)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autofac.Core;
-using Autofac.Features.OwnedInstances;
 using Xunit;
 
 namespace Autofac.Extras.Moq.Test
@@ -84,22 +83,6 @@ namespace Autofac.Extras.Moq.Test
         public void RegistrationsForIEnumerable_IsNotHandled()
         {
             var registrations = GetRegistrations<IEnumerable<ITestInterface>>();
-
-            Assert.Empty(registrations);
-        }
-
-        [Fact]
-        public void RegistrationsForLazy_IsNotHandled()
-        {
-            var registrations = GetRegistrations<Lazy<ITestInterface>>();
-
-            Assert.Empty(registrations);
-        }
-
-        [Fact]
-        public void RegistrationsForOwned_IsNotHandled()
-        {
-            var registrations = GetRegistrations<Owned<ITestInterface>>();
 
             Assert.Empty(registrations);
         }

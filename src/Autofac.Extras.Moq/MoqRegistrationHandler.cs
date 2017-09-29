@@ -25,6 +25,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Autofac.Builder;
@@ -39,17 +40,19 @@ namespace Autofac.Extras.Moq
     internal class MoqRegistrationHandler : IRegistrationSource
     {
         private readonly IList<Type> _createdServiceTypes;
+
         private readonly MethodInfo _createMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
         /// </summary>
         /// <param name="createdServiceTypes">A list of root services that have been created.</param>
+        [SuppressMessage("CA1825", "CA1825", Justification = "netstandard1.3 doesn't support Array.Empty<T>().")]
         public MoqRegistrationHandler(IList<Type> createdServiceTypes)
         {
-            _createdServiceTypes = createdServiceTypes;
+            this._createdServiceTypes = createdServiceTypes;
             var factoryType = typeof(MockRepository);
-            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[] { });
+            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[0]);
         }
 
         /// <summary>
@@ -83,7 +86,7 @@ namespace Autofac.Extras.Moq
             }
 
             var typedService = service as TypedService;
-            if (typedService == null || !CanMockService(typedService))
+            if (typedService == null || !this.CanMockService(typedService))
             {
                 return Enumerable.Empty<IComponentRegistration>();
             }
@@ -93,14 +96,6 @@ namespace Autofac.Extras.Moq
                 .InstancePerLifetimeScope();
 
             return new[] { rb.CreateRegistration() };
-        }
-
-        private bool CanMockService(IServiceWithType typedService)
-        {
-            return !_createdServiceTypes.Contains(typedService.ServiceType) &&
-                   ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
-                   !IsIEnumerable(typedService) &&
-                   !IsIStartable(typedService);
         }
 
         private static bool IsIEnumerable(IServiceWithType typedService)
@@ -123,6 +118,14 @@ namespace Autofac.Extras.Moq
             return serverTypeInfo.IsInterface
                 || serverTypeInfo.IsAbstract
                 || (serverTypeInfo.IsClass && !serverTypeInfo.IsSealed);
+        }
+
+        private bool CanMockService(IServiceWithType typedService)
+        {
+            return !this._createdServiceTypes.Contains(typedService.ServiceType) &&
+                   ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
+                   !IsIEnumerable(typedService) &&
+                   !IsIStartable(typedService);
         }
 
         /// <summary>

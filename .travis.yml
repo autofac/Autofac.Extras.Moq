@@ -1,6 +1,11 @@
 language: csharp
 solution: Autofac.Extras.Moq.sln
 
+addons:
+  apt:
+    packages:
+      - libunwind8
+
 matrix:
   include:
     - os: linux

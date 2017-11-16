@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Autofac.Builder;
 using Autofac.Core;
 using Autofac.Features.OwnedInstances;
 using Xunit;
@@ -116,6 +117,20 @@ namespace Autofac.Extras.Moq.Test
         public void RegistrationsForOwned_IsNotHandled()
         {
             var registrations = GetRegistrations<Owned<ITestInterface>>();
+
+            Assert.Empty(registrations);
+        }
+
+        [Fact]
+        public void RegistrationsForAlreadyRegisteredCollection_IsNotHandled()
+        {
+            this._systemUnderTest.RegistrationsFor(
+                new TypedService(typeof(IEnumerable<ITestInterface>)),
+                null);
+
+            var registrations = this._systemUnderTest.RegistrationsFor(
+                new TypedService(typeof(ITestInterface)),
+                x => new[] { RegistrationBuilder.ForType<ITestInterface>().CreateRegistration() });
 
             Assert.Empty(registrations);
         }

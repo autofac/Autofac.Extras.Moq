@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using Xunit;
 
@@ -119,6 +121,38 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void ProvideCollection()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var mockC = new Mock<IServiceC>();
+                mockC.Setup(x => x.RunC());
+                mock.Provide(mockC.Object);
+
+                var component = mock.Create<TestComponent>();
+                component.RunAll();
+
+                mockC.VerifyAll();
+            }
+        }
+
+        [Fact]
+        public void DoesNotAddMockToCollectionWhenServiceIsRegistered()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var builder = new ContainerBuilder();
+                builder.RegisterType<ServiceC>().As<IServiceC>();
+                builder.Update(mock.Container);
+
+                var component = mock.Create<TestComponent>();
+
+                Assert.Equal(1, component.ServiceCs.Count());
+                Assert.IsAssignableFrom<ServiceC>(component.ServiceCs.First());
+            }
+        }
+
+        [Fact]
         public void StrictWorksWithAllSetupationsMet()
         {
             using (var strict = AutoMock.GetStrict())
@@ -195,6 +229,7 @@ namespace Autofac.Extras.Moq.Test
 
         private static void SetUpSetupations(AutoMock mock)
         {
+            mock.Mock<IServiceC>().Setup(x => x.RunC());
             mock.Mock<IServiceB>().Setup(x => x.RunB());
             mock.Mock<IServiceA>().Setup(x => x.RunA());
         }
@@ -213,6 +248,11 @@ namespace Autofac.Extras.Moq.Test
         public interface IServiceB
         {
             void RunB();
+        }
+
+        public interface IServiceC
+        {
+            void RunC();
         }
 
         public abstract class AbstractClassA
@@ -235,23 +275,42 @@ namespace Autofac.Extras.Moq.Test
 
         // ReSharper disable once ClassNeverInstantiated.Global
         // ReSharper disable once MemberCanBePrivate.Global
+        public class ServiceC : IServiceC
+        {
+            public void RunC()
+            {
+            }
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Global
+        // ReSharper disable once MemberCanBePrivate.Global
         public sealed class TestComponent
         {
             private readonly IServiceA _serviceA;
 
             private readonly IServiceB _serviceB;
 
-            public TestComponent(IServiceA serviceA, IServiceB serviceB)
+            private readonly IEnumerable<IServiceC> _serviceCs;
+
+            public TestComponent(IServiceA serviceA, IServiceB serviceB, IEnumerable<IServiceC> serviceCs)
             {
                 this._serviceA = serviceA;
                 this._serviceB = serviceB;
+                this._serviceCs = serviceCs;
             }
 
             public void RunAll()
             {
                 this._serviceA.RunA();
                 this._serviceB.RunB();
+
+                foreach (var serviceC in _serviceCs)
+                {
+                    serviceC.RunC();
+                }
             }
+
+            public IEnumerable<IServiceC> ServiceCs => _serviceCs;
         }
 
         // ReSharper disable once ClassNeverInstantiated.Global

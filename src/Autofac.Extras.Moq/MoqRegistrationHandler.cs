@@ -30,6 +30,7 @@ using System.Linq;
 using System.Reflection;
 using Autofac.Builder;
 using Autofac.Core;
+using Autofac.Features.Metadata;
 using Autofac.Features.OwnedInstances;
 using Moq;
 
@@ -128,7 +129,8 @@ namespace Autofac.Extras.Moq
                    !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService) &&
                    !IsLazy(typedService) &&
-                   !IsOwned(typedService);
+                   !IsOwned(typedService) &&
+                   !IsMeta(typedService);
         }
 
         private static bool IsLazy(IServiceWithType typedService)
@@ -146,6 +148,14 @@ namespace Autofac.Extras.Moq
             // meaning in Autofac
             var typeInfo = typedService.ServiceType.GetTypeInfo();
             return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Owned<>);
+        }
+
+        private static bool IsMeta(IServiceWithType typedService)
+        {
+            // We handle most generics, but we don't handle Meta because that has special
+            // meaning in Autofac
+            var typeInfo = typedService.ServiceType.GetTypeInfo();
+            return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Meta<>);
         }
 
         /// <summary>

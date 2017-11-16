@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autofac.Core;
+using Autofac.Features.Metadata;
 using Autofac.Features.OwnedInstances;
 using Xunit;
 
@@ -116,6 +117,14 @@ namespace Autofac.Extras.Moq.Test
         public void RegistrationsForOwned_IsNotHandled()
         {
             var registrations = GetRegistrations<Owned<ITestInterface>>();
+
+            Assert.Empty(registrations);
+        }
+
+        [Fact]
+        public void RegistrationsForMeta_IsNotHandled()
+        {
+            var registrations = GetRegistrations<Meta<ITestInterface>>();
 
             Assert.Empty(registrations);
         }

@@ -41,7 +41,7 @@ namespace Autofac.Extras.Moq
     internal class MoqRegistrationHandler : IRegistrationSource
     {
         private readonly IList<Type> _createdServiceTypes;
-
+        private readonly ISet<Type> _usedInEnumerable;
         private readonly MethodInfo _createMethod;
 
         /// <summary>
@@ -54,6 +54,7 @@ namespace Autofac.Extras.Moq
             this._createdServiceTypes = createdServiceTypes;
             var factoryType = typeof(MockRepository);
             this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[0]);
+            this._usedInEnumerable = new HashSet<Type>();
         }
 
         /// <summary>
@@ -87,8 +88,12 @@ namespace Autofac.Extras.Moq
             }
 
             var typedService = service as TypedService;
-            if (typedService == null || !this.CanMockService(typedService))
+            if (typedService == null ||
+                !this.CanMockService(typedService.ServiceType) ||
+                IsTypeUsedInEnumerable(registrationAccessor, typedService))
             {
+                RememberTypeIfEnumerable(typedService);
+
                 return Enumerable.Empty<IComponentRegistration>();
             }
 
@@ -99,52 +104,101 @@ namespace Autofac.Extras.Moq
             return new[] { rb.CreateRegistration() };
         }
 
-        private static bool IsIEnumerable(IServiceWithType typedService)
+        /// <summary>
+        /// Is the type used when resolving an enumerable
+        /// </summary>
+        private bool IsTypeUsedInEnumerable(Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor, TypedService typedService)
+        {
+            return _usedInEnumerable.Contains(typedService.ServiceType) &&
+                registrationAccessor?.Invoke(typedService).Any() == true;
+        }
+
+        /// <summary>
+        /// Remember the given type if part of IEnumerable
+        /// </summary>
+        /// <remarks>
+        /// If we see a service used as part of an IEnumerable, we want to remember that so we can
+        /// avoid creating a mock for the service if there is already a service registered. The problem
+        /// is that when resolving an IEnumerable of a type that is already registered, that registered
+        /// service would get included in the enumerable along with a mocked version.
+        /// </remarks>
+        private void RememberTypeIfEnumerable(TypedService typedService)
+        {
+            if (typedService != null && IsIEnumerable(typedService.ServiceType))
+            {
+                var mockableType = FindMockableService(typedService.ServiceType);
+                if (mockableType != null)
+                {
+                    _usedInEnumerable.Add(mockableType);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Find nested service that can be mocked
+        /// </summary>
+        private Type FindMockableService(Type serviceType)
+        {
+            var canMockService = CanMockService(serviceType);
+            if (canMockService)
+            {
+                return serviceType;
+            }
+
+            if (serviceType.GetTypeInfo().IsGenericType)
+            {
+                return FindMockableService(serviceType.GenericTypeArguments.First());
+            }
+
+            return null;
+        }
+
+        private static bool IsIEnumerable(Type type)
         {
             // We handle most generics, but we don't handle IEnumerable because that has special
             // meaning in Autofac
-            return typedService.ServiceType.GetTypeInfo().IsGenericType &&
-                   typedService.ServiceType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>);
+            return type.GetTypeInfo().IsGenericType &&
+                   type.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>);
         }
 
-        private static bool IsIStartable(IServiceWithType typedService)
+        private static bool IsIStartable(Type type)
         {
-            return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
+            return typeof(IStartable).IsAssignableFrom(type);
         }
 
-        private static bool ServiceIsAbstractOrNonSealedOrInterface(IServiceWithType typedService)
+        private static bool ServiceIsAbstractOrNonSealedOrInterface(Type type)
         {
-            var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
+            var serverTypeInfo = type.GetTypeInfo();
 
             return serverTypeInfo.IsInterface
                 || serverTypeInfo.IsAbstract
                 || (serverTypeInfo.IsClass && !serverTypeInfo.IsSealed);
         }
 
-        private bool CanMockService(IServiceWithType typedService)
+        private bool CanMockService(Type type)
         {
-            return !this._createdServiceTypes.Contains(typedService.ServiceType) &&
-                   ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
-                   !IsIEnumerable(typedService) &&
-                   !IsIStartable(typedService) &&
-                   !IsLazy(typedService) &&
-                   !IsOwned(typedService);
+            return !this._createdServiceTypes.Contains(type) &&
+                   ServiceIsAbstractOrNonSealedOrInterface(type) &&
+                   !IsIEnumerable(type) &&
+                   !IsIStartable(type) &&
+                   !IsLazy(type) &&
+                   !IsOwned(type);
         }
 
-        private static bool IsLazy(IServiceWithType typedService)
+        private static bool IsLazy(Type type)
         {
             // We handle most generics, but we don't handle Lazy because that has special
             // meaning in Autofac
-            var typeInfo = typedService.ServiceType.GetTypeInfo();
+            var typeInfo = type.GetTypeInfo();
             return typeInfo.IsGenericType &&
                    typeInfo.GetGenericTypeDefinition() == typeof(Lazy<>);
         }
 
-        private static bool IsOwned(IServiceWithType typedService)
+        private static bool IsOwned(Type type)
         {
             // We handle most generics, but we don't handle Owned because that has special
             // meaning in Autofac
-            var typeInfo = typedService.ServiceType.GetTypeInfo();
+            var typeInfo = type.GetTypeInfo();
             return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Owned<>);
         }
 

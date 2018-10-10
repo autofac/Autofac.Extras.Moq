@@ -89,7 +89,7 @@ namespace Autofac.Extras.Moq
         /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by a repository.
         /// </summary>
         /// <param name="repository">The repository that defines the behavior. </param>
-        /// <param name="containerBuilder"></param>
+        /// <param name="containerBuilder">container builder used to create the mock container. leave null for AutoMock to create a new one</param>
         /// <returns>
         /// An <see cref="AutoMock"/> based on the provided <see cref="MockRepository"/>.
         /// </returns>
@@ -101,6 +101,7 @@ namespace Autofac.Extras.Moq
         /// <summary>
         /// Create new <see cref="AutoMock"/> instance with loose mock behavior.
         /// </summary>
+        /// <param name="containerBuilder">container builder used to create the mock container. leave null for AutoMock to create a new one</param>
         /// <returns>Container initialized for loose behavior.</returns>
         /// <seealso cref="MockRepository"/>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
@@ -112,6 +113,7 @@ namespace Autofac.Extras.Moq
         /// <summary>
         /// Create new <see cref="AutoMock"/> instance with strict mock behavior.
         /// </summary>
+        /// <param name="containerBuilder">container builder used to create the mock container. leave null for AutoMock to create a new one</param>
         /// <seealso cref="MockRepository"/>
         /// <returns>Container initialized for loose behavior.</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]

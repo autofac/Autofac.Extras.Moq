@@ -42,15 +42,15 @@ namespace Autofac.Extras.Moq
 
         private readonly List<Type> _createdServiceTypes = new List<Type>();
 
-        private AutoMock(MockBehavior behavior)
-            : this(new MockRepository(behavior))
+        private AutoMock(MockBehavior behavior, ContainerBuilder containerBuilder)
+            : this(new MockRepository(behavior), containerBuilder)
         {
         }
 
-        private AutoMock(MockRepository repository)
+        private AutoMock(MockRepository repository, ContainerBuilder containerBuilder)
         {
             this.MockRepository = repository;
-            var builder = new ContainerBuilder();
+            var builder = containerBuilder ?? new ContainerBuilder();
             builder.RegisterInstance(this.MockRepository);
             builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
             builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes));
@@ -89,12 +89,13 @@ namespace Autofac.Extras.Moq
         /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by a repository.
         /// </summary>
         /// <param name="repository">The repository that defines the behavior. </param>
+        /// <param name="containerBuilder"></param>
         /// <returns>
         /// An <see cref="AutoMock"/> based on the provided <see cref="MockRepository"/>.
         /// </returns>
-        public static AutoMock GetFromRepository(MockRepository repository)
+        public static AutoMock GetFromRepository(MockRepository repository, ContainerBuilder containerBuilder = null)
         {
-            return new AutoMock(repository);
+            return new AutoMock(repository, containerBuilder);
         }
 
         /// <summary>
@@ -103,9 +104,9 @@ namespace Autofac.Extras.Moq
         /// <returns>Container initialized for loose behavior.</returns>
         /// <seealso cref="MockRepository"/>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-        public static AutoMock GetLoose()
+        public static AutoMock GetLoose(ContainerBuilder containerBuilder = null)
         {
-            return new AutoMock(MockBehavior.Loose);
+            return new AutoMock(MockBehavior.Loose, containerBuilder);
         }
 
         /// <summary>
@@ -114,9 +115,9 @@ namespace Autofac.Extras.Moq
         /// <seealso cref="MockRepository"/>
         /// <returns>Container initialized for loose behavior.</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-        public static AutoMock GetStrict()
+        public static AutoMock GetStrict(ContainerBuilder containerBuilder = null)
         {
-            return new AutoMock(MockBehavior.Strict);
+            return new AutoMock(MockBehavior.Strict, containerBuilder);
         }
 
         /// <summary>

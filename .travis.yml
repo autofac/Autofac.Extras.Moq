@@ -30,7 +30,7 @@ before_install:
   - mkdir $DOTNET_INSTALL_DIR
   - curl -L $DOTNET_INSTALL_SCRIPT -o ./dotnet-install.sh
   - chmod 777 ./dotnet-install.sh
-  - ./dotnet-install.sh -c Current -v latest
+  - ./dotnet-install.sh -c Current -v 2.0.0
 
   # Add dotnet to PATH
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"

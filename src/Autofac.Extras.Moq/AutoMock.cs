@@ -42,18 +42,19 @@ namespace Autofac.Extras.Moq
 
         private readonly List<Type> _createdServiceTypes = new List<Type>();
 
-        private AutoMock(MockBehavior behavior)
-            : this(new MockRepository(behavior))
+        private AutoMock(MockBehavior behavior, Action<ContainerBuilder> beforeBuild)
+            : this(new MockRepository(behavior), beforeBuild)
         {
         }
 
-        private AutoMock(MockRepository repository)
+        private AutoMock(MockRepository repository, Action<ContainerBuilder> beforeBuild)
         {
             this.MockRepository = repository;
             var builder = new ContainerBuilder();
             builder.RegisterInstance(this.MockRepository);
             builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
             builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes));
+            beforeBuild?.Invoke(builder);
             this.Container = builder.Build();
             this.VerifyAll = false;
         }
@@ -94,7 +95,20 @@ namespace Autofac.Extras.Moq
         /// </returns>
         public static AutoMock GetFromRepository(MockRepository repository)
         {
-            return new AutoMock(repository);
+            return new AutoMock(repository, null);
+        }
+
+        /// <summary>
+        /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by a repository.
+        /// </summary>
+        /// <param name="repository">The repository that defines the behavior. </param>
+        /// <param name="beforeBuild">Callback before container was created, you can add your own components here</param>
+        /// <returns>
+        /// An <see cref="AutoMock"/> based on the provided <see cref="MockRepository"/>.
+        /// </returns>
+        public static AutoMock GetFromRepository(MockRepository repository, Action<ContainerBuilder> beforeBuild)
+        {
+            return new AutoMock(repository, beforeBuild);
         }
 
         /// <summary>
@@ -105,7 +119,19 @@ namespace Autofac.Extras.Moq
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static AutoMock GetLoose()
         {
-            return new AutoMock(MockBehavior.Loose);
+            return new AutoMock(MockBehavior.Loose, null);
+        }
+
+        /// <summary>
+        /// Create new <see cref="AutoMock"/> instance with loose mock behavior.
+        /// </summary>
+        /// <param name="beforeBuild">Callback before container was created, you can add your own components here</param>
+        /// <returns>Container initialized for loose behavior.</returns>
+        /// <seealso cref="MockRepository"/>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
+        public static AutoMock GetLoose(Action<ContainerBuilder> beforeBuild)
+        {
+            return new AutoMock(MockBehavior.Loose, beforeBuild);
         }
 
         /// <summary>
@@ -116,7 +142,19 @@ namespace Autofac.Extras.Moq
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static AutoMock GetStrict()
         {
-            return new AutoMock(MockBehavior.Strict);
+            return new AutoMock(MockBehavior.Strict, null);
+        }
+
+        /// <summary>
+        /// Create new <see cref="AutoMock"/> instance with strict mock behavior.
+        /// </summary>
+        /// <param name="beforeBuild">Callback before container was created, you can add your own components here</param>
+        /// <seealso cref="MockRepository"/>
+        /// <returns>Container initialized for loose behavior.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
+        public static AutoMock GetStrict(Action<ContainerBuilder> beforeBuild)
+        {
+            return new AutoMock(MockBehavior.Strict, beforeBuild);
         }
 
         /// <summary>

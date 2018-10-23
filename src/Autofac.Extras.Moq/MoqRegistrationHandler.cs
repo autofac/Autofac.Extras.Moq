@@ -71,7 +71,7 @@ namespace Autofac.Extras.Moq
         /// by the container.
         /// </summary>
         /// <param name="service">The service that was requested.</param>
-        /// <param name="registrationAccessor">Not used; required by the interface</param>
+        /// <param name="registrationAccessor">Not used; required by the interface.</param>
         /// <returns>
         /// Registrations for the service.
         /// </returns>

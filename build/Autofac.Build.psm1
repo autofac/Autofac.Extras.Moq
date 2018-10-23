@@ -77,7 +77,8 @@ function Install-DotNetCli
   # Download the dotnet CLI install script
   if (!(Test-Path .\dotnet\install.ps1))
   {
-    Invoke-WebRequest "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.1/scripts/obtain/dotnet-install.ps1" -OutFile ".\.dotnet\dotnet-install.ps1"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile ".\.dotnet\dotnet-install.ps1"
   }
 
   # Run the dotnet CLI install
@@ -172,11 +173,11 @@ function Invoke-DotNetPack
 
       if ($VersionSuffix -eq "")
       {
-        & dotnet pack ("""" + $Project.FullName + """") --configuration Release --include-symbols --output $PackagesPath
+        & dotnet pack ("""" + $Project.FullName + """") --configuration Release --output $PackagesPath
       }
       else
       {
-        & dotnet pack ("""" + $Project.FullName + """") --configuration Release --version-suffix $VersionSuffix --include-symbols --output $PackagesPath
+        & dotnet pack ("""" + $Project.FullName + """") --configuration Release --version-suffix $VersionSuffix --output $PackagesPath
       }
       if ($LASTEXITCODE -ne 0)
       {

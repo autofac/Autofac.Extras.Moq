@@ -34,7 +34,7 @@ using Moq;
 namespace Autofac.Extras.Moq
 {
     /// <summary>
-    /// Wrapper around <see cref="Autofac"/> and <see cref="Moq"/>
+    /// Wrapper around <see cref="Autofac"/> and <see cref="Moq"/>.
     /// </summary>
     public class AutoMock : IDisposable
     {
@@ -102,7 +102,7 @@ namespace Autofac.Extras.Moq
         /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by a repository.
         /// </summary>
         /// <param name="repository">The repository that defines the behavior. </param>
-        /// <param name="beforeBuild">Callback before container was created, you can add your own components here</param>
+        /// <param name="beforeBuild">Callback before container was created, you can add your own components here.</param>
         /// <returns>
         /// An <see cref="AutoMock"/> based on the provided <see cref="MockRepository"/>.
         /// </returns>
@@ -125,7 +125,7 @@ namespace Autofac.Extras.Moq
         /// <summary>
         /// Create new <see cref="AutoMock"/> instance with loose mock behavior.
         /// </summary>
-        /// <param name="beforeBuild">Callback before container was created, you can add your own components here</param>
+        /// <param name="beforeBuild">Callback before container was created, you can add your own components here.</param>
         /// <returns>Container initialized for loose behavior.</returns>
         /// <seealso cref="MockRepository"/>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
@@ -148,7 +148,7 @@ namespace Autofac.Extras.Moq
         /// <summary>
         /// Create new <see cref="AutoMock"/> instance with strict mock behavior.
         /// </summary>
-        /// <param name="beforeBuild">Callback before container was created, you can add your own components here</param>
+        /// <param name="beforeBuild">Callback before container was created, you can add your own components here.</param>
         /// <seealso cref="MockRepository"/>
         /// <returns>Container initialized for loose behavior.</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
@@ -158,10 +158,10 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
-        /// Resolve the specified type in the container (register it if needed)
+        /// Resolve the specified type in the container (register it if needed).
         /// </summary>
-        /// <typeparam name="T">Service</typeparam>
-        /// <param name="parameters">Optional parameters</param>
+        /// <typeparam name="T">Service.</typeparam>
+        /// <param name="parameters">Optional parameters.</param>
         /// <returns>The service.</returns>
         public T Create<T>(params Parameter[] parameters)
         {
@@ -178,10 +178,10 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
-        /// Finds (creating if needed) the actual mock for the provided type
+        /// Finds (creating if needed) the actual mock for the provided type.
         /// </summary>
-        /// <typeparam name="T">Type to mock</typeparam>
-        /// <param name="parameters">Optional parameters</param>
+        /// <typeparam name="T">Type to mock.</typeparam>
+        /// <param name="parameters">Optional parameters.</param>
         /// <returns>A mock of type <typeparamref name="T"/>.</returns>
         public Mock<T> Mock<T>(params Parameter[] parameters)
             where T : class
@@ -191,11 +191,11 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
-        /// Resolve the specified type in the container (register it if needed)
+        /// Resolve the specified type in the container (register it if needed).
         /// </summary>
         /// <typeparam name="TService">The type of service being provided.</typeparam>
         /// <typeparam name="TImplementation">The implementation of the service.</typeparam>
-        /// <param name="parameters">Optional parameters</param>
+        /// <param name="parameters">Optional parameters.</param>
         /// <returns>The service.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
         public TService Provide<TService, TImplementation>(params Parameter[] parameters)
@@ -207,7 +207,7 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
-        /// Resolve the specified type in the container (register specified instance if needed)
+        /// Resolve the specified type in the container (register specified instance if needed).
         /// </summary>
         /// <typeparam name="TService">The type of service being provided.</typeparam>
         /// <param name="instance">The instance to provide.</param>
@@ -239,7 +239,7 @@ namespace Autofac.Extras.Moq
         /// <see langword="false" /> if this is getting run as part of finalization where
         /// managed resources may have already been cleaned up.
         /// </param>
-        private void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!this._disposed)
             {

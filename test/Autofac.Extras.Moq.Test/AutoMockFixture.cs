@@ -253,8 +253,11 @@ namespace Autofac.Extras.Moq.Test
 
         public class ConsumesDisposable
         {
+            private IInheritFromDisposable _disposable;
+
             public ConsumesDisposable(IInheritFromDisposable disposable)
             {
+                this._disposable = disposable;
             }
         }
 

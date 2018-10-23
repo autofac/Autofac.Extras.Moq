@@ -44,6 +44,19 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void CanProvideConcreteTypesWithoutDefaultConstructors()
+        {
+            // Issue #15
+            // Dependency chains that have concrete types without default constructors
+            // end up failing to be mocked because the DynamicProxy wants a zero-param ctor.
+            using (var env = AutoMock.GetLoose())
+            {
+                // Shouldn't throw on resolve.
+                var sut = env.Create<ConsumesConcreteTypeWithoutDefaultConstructor>();
+            }
+        }
+
+        [Fact]
         public void DefaultConstructorIsLoose()
         {
             using (var mock = AutoMock.GetLoose())
@@ -251,6 +264,16 @@ namespace Autofac.Extras.Moq.Test
         {
         }
 
+        public class ConcreteTypeWithoutDefaultConstructor
+        {
+            private ClassA _dependency;
+
+            public ConcreteTypeWithoutDefaultConstructor(ClassA dependency)
+            {
+                this._dependency = dependency;
+            }
+        }
+
         public class ConsumesDisposable
         {
             private IInheritFromDisposable _disposable;
@@ -258,6 +281,19 @@ namespace Autofac.Extras.Moq.Test
             public ConsumesDisposable(IInheritFromDisposable disposable)
             {
                 this._disposable = disposable;
+            }
+        }
+
+        public class ConsumesConcreteTypeWithoutDefaultConstructor
+        {
+            private ConcreteTypeWithoutDefaultConstructor _dependency;
+
+            public ConsumesConcreteTypeWithoutDefaultConstructor(ConcreteTypeWithoutDefaultConstructor dependency)
+            {
+                // Issue #15
+                // The dependency chain here is important because the test involves verifying
+                // that mocking can handle downstream concrete types that don't have default dependencies.
+                this._dependency = dependency;
             }
         }
 

@@ -53,6 +53,9 @@ namespace Autofac.Extras.Moq
         public MoqRegistrationHandler(IList<Type> createdServiceTypes)
         {
             this._createdServiceTypes = createdServiceTypes;
+
+            // This is MockRepository.Create<T>() with zero parameters. This is important because
+            // it limits what can be auto-mocked.
             var factoryType = typeof(MockRepository);
             this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[0]);
         }
@@ -113,19 +116,25 @@ namespace Autofac.Extras.Moq
             return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
         }
 
-        private static bool ServiceIsAbstractOrNonSealedOrInterface(IServiceWithType typedService)
+        private static bool ServiceCompatibleWithMockRepositoryCreate(IServiceWithType typedService)
         {
             var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
 
+            // Issue #15: Ensure there's a zero-parameter ctor or the DynamicProxy under Moq fails.
             return serverTypeInfo.IsInterface
                 || serverTypeInfo.IsAbstract
-                || (serverTypeInfo.IsClass && !serverTypeInfo.IsSealed);
+                || (serverTypeInfo.IsClass &&
+                    !serverTypeInfo.IsSealed &&
+                    typedService.ServiceType.GetConstructors().Any(c => c.GetParameters().Length == 0));
         }
 
         private bool CanMockService(IServiceWithType typedService)
         {
+            // Since we're calling MockRepository.Create<T>() to auto-mock and we don't provide
+            // parameter support, it means we're limited to only auto-mocking things that can pass
+            // through Moq / Castle.DynamicProxy without any parameters.
             return !this._createdServiceTypes.Contains(typedService.ServiceType) &&
-                   ServiceIsAbstractOrNonSealedOrInterface(typedService) &&
+                   ServiceCompatibleWithMockRepositoryCreate(typedService) &&
                    !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService) &&
                    !IsLazy(typedService) &&

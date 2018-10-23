@@ -1,3 +1,4 @@
+using System;
 using Moq;
 using Xunit;
 
@@ -5,6 +6,20 @@ namespace Autofac.Extras.Moq.Test
 {
     public class AutoMockFixture
     {
+        public interface IInheritFromDisposable : IDisposable
+        {
+        }
+
+        public interface IServiceA
+        {
+            void RunA();
+        }
+
+        public interface IServiceB
+        {
+            void RunB();
+        }
+
         [Fact]
         public void AbstractDependencyIsFulfilled()
         {
@@ -18,14 +33,13 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegularClassDependencyIsFulfilled()
+        public void BuildCallbackAllowsOverrides()
         {
-            using (var mock = AutoMock.GetLoose())
+            var service = new ServiceA();
+            using (var mock = AutoMock.GetLoose(b => b.RegisterInstance(service).As<IServiceA>()))
             {
-                var component = mock.Create<TestComponentRequiringClassA>();
-                Assert.Equal(
-                    mock.Mock<ClassA>().Object,
-                    component.InstanceOfClassA);
+                var resolved = mock.Create<IServiceA>();
+                Assert.Same(service, resolved);
             }
         }
 
@@ -44,6 +58,17 @@ namespace Autofac.Extras.Moq.Test
             using (var mock = AutoMock.GetLoose())
             {
                 RunTest(mock);
+            }
+        }
+
+        [Fact]
+        public void DisposableStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                // Should not throw on dispose of AutoMock.
+                mock.Mock<IInheritFromDisposable>().Setup(x => x.Dispose());
+                var sut = mock.Create<ConsumesDisposable>();
             }
         }
 
@@ -119,6 +144,18 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void RegularClassDependencyIsFulfilled()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var component = mock.Create<TestComponentRequiringClassA>();
+                Assert.Equal(
+                    mock.Mock<ClassA>().Object,
+                    component.InstanceOfClassA);
+            }
+        }
+
+        [Fact]
         public void StrictWorksWithAllSetupationsMet()
         {
             using (var strict = AutoMock.GetStrict())
@@ -171,17 +208,6 @@ namespace Autofac.Extras.Moq.Test
                 });
         }
 
-        [Fact]
-        public void BuildCallbackAllowsOverrides()
-        {
-            var service = new ServiceA();
-            using (var mock = AutoMock.GetLoose(b => b.RegisterInstance(service).As<IServiceA>()))
-            {
-                var resolved = mock.Create<IServiceA>();
-                Assert.Same(service, resolved);
-            }
-        }
-
         private static void AssertProperties(AutoMock mock)
         {
             Assert.NotNull(mock.Container);
@@ -216,16 +242,6 @@ namespace Autofac.Extras.Moq.Test
             mock.Mock<IServiceA>().Setup(x => x.RunA()).Verifiable();
         }
 
-        public interface IServiceA
-        {
-            void RunA();
-        }
-
-        public interface IServiceB
-        {
-            void RunB();
-        }
-
         public abstract class AbstractClassA
         {
         }
@@ -233,6 +249,13 @@ namespace Autofac.Extras.Moq.Test
         // ReSharper disable once ClassNeverInstantiated.Global
         public class ClassA : AbstractClassA
         {
+        }
+
+        public class ConsumesDisposable
+        {
+            public ConsumesDisposable(IInheritFromDisposable disposable)
+            {
+            }
         }
 
         // ReSharper disable once ClassNeverInstantiated.Global

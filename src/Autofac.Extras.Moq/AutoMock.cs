@@ -52,9 +52,14 @@ namespace Autofac.Extras.Moq
             this.MockRepository = repository;
             var builder = new ContainerBuilder();
             builder.RegisterInstance(this.MockRepository);
+
+            // The action happens after instance registrations but before source registrations
+            // to avoid issues like ContravariantRegistrationSource order challenges. ACTNARS
+            // and Moq being last in are least likely to cause ordering conflicts.
+            beforeBuild?.Invoke(builder);
+
             builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
             builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes));
-            beforeBuild?.Invoke(builder);
             this.Container = builder.Build();
             this.VerifyAll = false;
         }

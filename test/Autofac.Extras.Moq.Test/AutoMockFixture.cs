@@ -171,6 +171,17 @@ namespace Autofac.Extras.Moq.Test
                 });
         }
 
+        [Fact]
+        public void BuildCallbackAllowsOverrides()
+        {
+            var service = new ServiceA();
+            using (var mock = AutoMock.GetLoose(b => b.RegisterInstance(service).As<IServiceA>()))
+            {
+                var resolved = mock.Create<IServiceA>();
+                Assert.Same(service, resolved);
+            }
+        }
+
         private static void AssertProperties(AutoMock mock)
         {
             Assert.NotNull(mock.Container);

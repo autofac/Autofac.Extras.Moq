@@ -16,6 +16,18 @@ namespace Autofac.Extras.Moq.Test
             this._systemUnderTest = new MoqRegistrationHandler(new List<Type>());
         }
 
+        private interface ISomethingStartable : IStartable
+        {
+        }
+
+        private interface ITestGenericInterface<T>
+        {
+        }
+
+        private interface ITestInterface
+        {
+        }
+
         [Fact]
         public void RegistrationForConcreteClass_IsHandled()
         {
@@ -40,19 +52,19 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegistrationForSealedConcreteClass_IsNotHandled()
-        {
-            var registrations = GetRegistrations<TestSealedConcreteClass>();
-
-            Assert.Empty(registrations);
-        }
-
-        [Fact]
         public void RegistrationForNonTypedService_IsNotHandled()
         {
             var registrations = this._systemUnderTest.RegistrationsFor(
                 new KeyedService("key", typeof(string)),
                 null);
+
+            Assert.Empty(registrations);
+        }
+
+        [Fact]
+        public void RegistrationForSealedConcreteClass_IsNotHandled()
+        {
+            var registrations = GetRegistrations<TestSealedConcreteClass>();
 
             Assert.Empty(registrations);
         }
@@ -114,14 +126,6 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegistrationsForOwned_IsNotHandled()
-        {
-            var registrations = GetRegistrations<Owned<ITestInterface>>();
-
-            Assert.Empty(registrations);
-        }
-
-        [Fact]
         public void RegistrationsForMeta_IsNotHandled()
         {
             var registrations = GetRegistrations<Meta<ITestInterface>>();
@@ -129,21 +133,17 @@ namespace Autofac.Extras.Moq.Test
             Assert.Empty(registrations);
         }
 
+        [Fact]
+        public void RegistrationsForOwned_IsNotHandled()
+        {
+            var registrations = GetRegistrations<Owned<ITestInterface>>();
+
+            Assert.Empty(registrations);
+        }
+
         private IEnumerable<IComponentRegistration> GetRegistrations<T>()
         {
             return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), null);
-        }
-
-        private interface ISomethingStartable : IStartable
-        {
-        }
-
-        private interface ITestGenericInterface<T>
-        {
-        }
-
-        private interface ITestInterface
-        {
         }
 
         private abstract class TestAbstractClass

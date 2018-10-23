@@ -50,8 +50,8 @@ install:
   - dotnet restore
 
   # Build projects
-  - dotnet build -c $CONFIGURATION -f netcoreapp2.0 ./test/Autofac.Extras.Moq.Test
+  - dotnet build -c $CONFIGURATION -f netcoreapp2.1 ./test/Autofac.Extras.Moq.Test
 
 script:
   # Run tests
-  - dotnet test -c $CONFIGURATION -f netcoreapp2.0 ./test/Autofac.Extras.Moq.Test
+  - dotnet test -c $CONFIGURATION -f netcoreapp2.1 ./test/Autofac.Extras.Moq.Test

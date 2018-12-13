@@ -8,6 +8,6 @@ Moq auto mocking integration for [Autofac IoC](https://github.com/autofac/Autofa
 
 Please file issues and pull requests for this package in this repository rather than in the Autofac core repo.
 
-- [Documentation](http://autofac.readthedocs.io/en/latest/integration/moq.html)
+- [Documentation](https://autofac.readthedocs.io/en/latest/integration/moq.html)
 - [NuGet](https://www.nuget.org/packages/Autofac.Extras.Moq)
-- [Contributing](http://autofac.readthedocs.io/en/latest/contributors.html)
+- [Contributing](https://autofac.readthedocs.io/en/latest/contributors.html)

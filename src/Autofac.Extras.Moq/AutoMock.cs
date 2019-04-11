@@ -143,7 +143,7 @@ namespace Autofac.Extras.Moq
         /// Create new <see cref="AutoMock"/> instance with strict mock behavior.
         /// </summary>
         /// <seealso cref="MockRepository"/>
-        /// <returns>Container initialized for loose behavior.</returns>
+        /// <returns>Container initialized for strict behavior.</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static AutoMock GetStrict()
         {
@@ -155,7 +155,7 @@ namespace Autofac.Extras.Moq
         /// </summary>
         /// <param name="beforeBuild">Callback before container was created, you can add your own components here.</param>
         /// <seealso cref="MockRepository"/>
-        /// <returns>Container initialized for loose behavior.</returns>
+        /// <returns>Container initialized for strict behavior.</returns>
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static AutoMock GetStrict(Action<ContainerBuilder> beforeBuild)
         {

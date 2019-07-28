@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Autofac.Core;
+﻿using Autofac.Core;
 using Autofac.Features.Metadata;
 using Autofac.Features.OwnedInstances;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Autofac.Extras.Moq.Test
@@ -41,12 +43,16 @@ namespace Autofac.Extras.Moq.Test
         {
             var createdServiceTypes = new List<Type> { typeof(TestConcreteClass) };
             var handler = new MoqRegistrationHandler(createdServiceTypes);
-            var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), null);
+            var registrations = handler.RegistrationsFor(
+                new TypedService(typeof(TestConcreteClass)),
+                EmptyRegistrationAccessor());
 
             Assert.Empty(registrations);
 
             createdServiceTypes.Add(typeof(TestAbstractClass));
-            registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), null);
+            registrations = handler.RegistrationsFor(
+                new TypedService(typeof(TestAbstractClass)),
+                EmptyRegistrationAccessor());
 
             Assert.Empty(registrations);
         }
@@ -141,9 +147,27 @@ namespace Autofac.Extras.Moq.Test
             Assert.Empty(registrations);
         }
 
+        [Fact]
+        public void RegistrationsForRegisteredService_IsNotHandled()
+        {
+            var registrations = _systemUnderTest.RegistrationsFor(
+                new TypedService(typeof(TestConcreteClass)),
+                service =>
+                {
+                    var typedService = service as TypedService;
+                    return typedService?.ServiceType == typeof(TestConcreteClass)
+                        ? new[] { new Mock<IComponentRegistration>().Object }
+                        : Enumerable.Empty<IComponentRegistration>();
+                });
+
+            Assert.Empty(registrations);
+        }
+
         private IEnumerable<IComponentRegistration> GetRegistrations<T>()
         {
-            return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), null);
+            return this._systemUnderTest.RegistrationsFor(
+                new TypedService(typeof(T)),
+                EmptyRegistrationAccessor());
         }
 
         private abstract class TestAbstractClass
@@ -156,6 +180,11 @@ namespace Autofac.Extras.Moq.Test
 
         private sealed class TestSealedConcreteClass
         {
+        }
+
+        private static Func<Service, IEnumerable<IComponentRegistration>> EmptyRegistrationAccessor()
+        {
+            return service => Enumerable.Empty<IComponentRegistration>();
         }
     }
 }

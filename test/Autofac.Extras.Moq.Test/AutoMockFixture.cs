@@ -156,6 +156,20 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void ProvideInstanceAndResolve()
+        {
+            var serviceA = new ServiceA();
+            using (var mock = AutoMock.GetLoose(cfg => cfg.RegisterInstance(serviceA).As<IServiceA>()))
+            {
+                var component = mock.Create<TestComponent>();
+
+                component.RunAll();
+
+                Assert.True(serviceA.WasRun);
+            }
+        }
+
+        [Fact]
         public void RegularClassDependencyIsFulfilled()
         {
             using (var mock = AutoMock.GetLoose())
@@ -299,8 +313,11 @@ namespace Autofac.Extras.Moq.Test
         // ReSharper disable once MemberCanBePrivate.Global
         public class ServiceA : IServiceA
         {
+            public bool WasRun { get; private set; }
+
             public void RunA()
             {
+                WasRun = true;
             }
         }
 

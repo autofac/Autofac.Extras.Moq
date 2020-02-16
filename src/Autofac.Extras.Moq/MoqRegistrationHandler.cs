@@ -1,5 +1,5 @@
 // This software is part of the Autofac IoC container
-// Copyright (c) 2007 - 2008 Autofac Contributors
+// Copyright (c) 2020 Autofac Contributors
 // https://autofac.org
 //
 // Permission is hereby granted, free of charge, to any person
@@ -116,6 +116,11 @@ namespace Autofac.Extras.Moq
             return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
         }
 
+        private static bool IsInsideAutofac(IServiceWithType typedService)
+        {
+            return typeof(IRegistrationSource).Assembly == typedService.ServiceType.Assembly;
+        }
+
         private static bool ServiceCompatibleWithMockRepositoryCreate(IServiceWithType typedService)
         {
             var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
@@ -137,6 +142,7 @@ namespace Autofac.Extras.Moq
                    ServiceCompatibleWithMockRepositoryCreate(typedService) &&
                    !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService) &&
+                   !IsInsideAutofac(typedService) &&
                    !IsLazy(typedService) &&
                    !IsOwned(typedService) &&
                    !IsMeta(typedService);

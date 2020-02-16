@@ -1,5 +1,5 @@
 // This software is part of the Autofac IoC container
-// Copyright (c) 2013 Autofac Contributors
+// Copyright (c) 2020 Autofac Contributors
 // https://autofac.org
 //
 // Permission is hereby granted, free of charge, to any person
@@ -193,38 +193,6 @@ namespace Autofac.Extras.Moq
         {
             var obj = (IMocked<T>)Create<T>(true, parameters);
             return obj.Mock;
-        }
-
-        /// <summary>
-        /// Resolve the specified type in the container (register it if needed).
-        /// </summary>
-        /// <typeparam name="TService">The type of service being provided.</typeparam>
-        /// <typeparam name="TImplementation">The implementation of the service.</typeparam>
-        /// <param name="parameters">Optional parameters.</param>
-        /// <returns>The service.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
-        public TService Provide<TService, TImplementation>(params Parameter[] parameters)
-        {
-            this.Container.ComponentRegistry.Register(
-                            RegistrationBuilder.ForType<TImplementation>().As<TService>().InstancePerLifetimeScope().CreateRegistration());
-
-            return this.Container.Resolve<TService>(parameters);
-        }
-
-        /// <summary>
-        /// Resolve the specified type in the container (register specified instance if needed).
-        /// </summary>
-        /// <typeparam name="TService">The type of service being provided.</typeparam>
-        /// <param name="instance">The instance to provide.</param>
-        /// <returns>The instance resolved from container.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The component registry is responsible for registration disposal.")]
-        public TService Provide<TService>(TService instance)
-            where TService : class
-        {
-            this.Container.ComponentRegistry.Register(
-                            RegistrationBuilder.ForDelegate((c, p) => instance).InstancePerLifetimeScope().CreateRegistration());
-
-            return this.Container.Resolve<TService>();
         }
 
         private T Create<T>(bool isMock, params Parameter[] parameters)

@@ -49,7 +49,6 @@ namespace Autofac.Extras.Moq
         /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
         /// </summary>
         /// <param name="createdServiceTypes">A list of root services that have been created.</param>
-        [SuppressMessage("CA1825", "CA1825", Justification = "netstandard1.3 doesn't support Array.Empty<T>().")]
         public MoqRegistrationHandler(IList<Type> createdServiceTypes)
         {
             this._createdServiceTypes = createdServiceTypes;
@@ -57,7 +56,7 @@ namespace Autofac.Extras.Moq
             // This is MockRepository.Create<T>() with zero parameters. This is important because
             // it limits what can be auto-mocked.
             var factoryType = typeof(MockRepository);
-            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[0]);
+            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), Array.Empty<Type>());
         }
 
         /// <summary>

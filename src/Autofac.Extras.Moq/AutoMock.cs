@@ -1,5 +1,5 @@
 // This software is part of the Autofac IoC container
-// Copyright (c) 2020 Autofac Contributors
+// Copyright (c) 2013 Autofac Contributors
 // https://autofac.org
 //
 // Permission is hereby granted, free of charge, to any person

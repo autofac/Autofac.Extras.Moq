@@ -1,5 +1,5 @@
 // This software is part of the Autofac IoC container
-// Copyright (c) 2007 - 2008 Autofac Contributors
+// Copyright (c) 2007-2008 Autofac Contributors
 // https://autofac.org
 //
 // Permission is hereby granted, free of charge, to any person
@@ -49,7 +49,6 @@ namespace Autofac.Extras.Moq
         /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
         /// </summary>
         /// <param name="createdServiceTypes">A list of root services that have been created.</param>
-        [SuppressMessage("CA1825", "CA1825", Justification = "netstandard1.3 doesn't support Array.Empty<T>().")]
         public MoqRegistrationHandler(IList<Type> createdServiceTypes)
         {
             this._createdServiceTypes = createdServiceTypes;
@@ -57,7 +56,7 @@ namespace Autofac.Extras.Moq
             // This is MockRepository.Create<T>() with zero parameters. This is important because
             // it limits what can be auto-mocked.
             var factoryType = typeof(MockRepository);
-            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), new Type[0]);
+            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), Array.Empty<Type>());
         }
 
         /// <summary>
@@ -116,6 +115,11 @@ namespace Autofac.Extras.Moq
             return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
         }
 
+        private static bool IsInsideAutofac(IServiceWithType typedService)
+        {
+            return typeof(IRegistrationSource).Assembly == typedService.ServiceType.Assembly;
+        }
+
         private static bool ServiceCompatibleWithMockRepositoryCreate(IServiceWithType typedService)
         {
             var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
@@ -137,6 +141,7 @@ namespace Autofac.Extras.Moq
                    ServiceCompatibleWithMockRepositoryCreate(typedService) &&
                    !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService) &&
+                   !IsInsideAutofac(typedService) &&
                    !IsLazy(typedService) &&
                    !IsOwned(typedService) &&
                    !IsMeta(typedService);

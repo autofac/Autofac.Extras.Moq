@@ -131,28 +131,41 @@ namespace Autofac.Extras.Moq.Test
         [Fact]
         public void ProvideImplementation()
         {
-            using (var mock = AutoMock.GetLoose())
-            {
-                var serviceA = mock.Provide<IServiceA, ServiceA>();
+            var newServiceA = new ServiceA();
 
+            using (var mock = AutoMock.GetLoose(cfg => cfg.RegisterInstance(newServiceA).As<IServiceA>()))
+            {
+                var serviceA = mock.Create<IServiceA>();
                 Assert.NotNull(serviceA);
-                Assert.False(serviceA is IMocked<IServiceA>);
+                Assert.Same(newServiceA, serviceA);
             }
         }
 
         [Fact]
         public void ProvideInstance()
         {
-            using (var mock = AutoMock.GetLoose())
+            var mockA = new Mock<IServiceA>();
+            mockA.Setup(x => x.RunA());
+            using (var mock = AutoMock.GetLoose(cfg => cfg.RegisterMock(mockA)))
             {
-                var mockA = new Mock<IServiceA>();
-                mockA.Setup(x => x.RunA());
-                mock.Provide(mockA.Object);
-
                 var component = mock.Create<TestComponent>();
+
+                component.RunAll();
+                mockA.VerifyAll();
+            }
+        }
+
+        [Fact]
+        public void ProvideInstanceAndResolve()
+        {
+            var serviceA = new ServiceA();
+            using (var mock = AutoMock.GetLoose(cfg => cfg.RegisterInstance(serviceA).As<IServiceA>()))
+            {
+                var component = mock.Create<TestComponent>();
+
                 component.RunAll();
 
-                mockA.VerifyAll();
+                Assert.True(serviceA.WasRun);
             }
         }
 
@@ -223,7 +236,6 @@ namespace Autofac.Extras.Moq.Test
 
         private static void AssertProperties(AutoMock mock)
         {
-            Assert.NotNull(mock.Container);
             Assert.NotNull(mock.MockRepository);
         }
 
@@ -301,8 +313,11 @@ namespace Autofac.Extras.Moq.Test
         // ReSharper disable once MemberCanBePrivate.Global
         public class ServiceA : IServiceA
         {
+            public bool WasRun { get; private set; }
+
             public void RunA()
             {
+                WasRun = true;
             }
         }
 

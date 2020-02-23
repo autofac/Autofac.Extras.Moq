@@ -259,6 +259,16 @@ namespace Autofac.Extras.Moq.Test
             Assert.Equal(2, wrapper.All.Count());
         }
 
+        [Fact]
+        public void MockAddedToEnumerableIfNoTypeIsRegistered()
+        {
+            var autoMock = AutoMock.GetLoose();
+
+            var wrapper = autoMock.Create<TestClassConsumesIEnumerable>();
+
+            Assert.Single(wrapper.All);
+        }
+
         public interface ITest
         {
         }

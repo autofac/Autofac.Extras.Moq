@@ -80,6 +80,7 @@ namespace Autofac.Extras.Moq
         /// <exception cref="System.ArgumentNullException">
         /// Thrown if <paramref name="service" /> is <see langword="null" />.
         /// </exception>
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Registry handles disposal")]
         public IEnumerable<IComponentRegistration> RegistrationsFor(
             Service service,
             Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
@@ -90,16 +91,49 @@ namespace Autofac.Extras.Moq
             }
 
             var typedService = service as TypedService;
-            if (typedService == null || !this.CanMockService(typedService))
+
+            IComponentRegistration result;
+
+            // Manually registered, don't do ourselves.
+            if (typedService == null || registrationAccessor(service).Any())
+            {
+                result = null;
+            }
+            else if (ServiceManuallyCreated(typedService))
+            {
+                result = RegistrationBuilder.ForType(typedService.ServiceType)
+                                            .InstancePerLifetimeScope()
+                                            .CreateRegistration();
+            }
+            else if (ShouldMockService(typedService))
+            {
+                if (ServiceCompatibleWithMockRepositoryCreate(typedService))
+                {
+                    result = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
+                                             .As(service)
+                                             .InstancePerLifetimeScope()
+                                             .CreateRegistration();
+                }
+                else
+                {
+                    // Issue #15 - Incompatible mocks need to be registered using the type.
+                    // Their constructor dependencies will then be mocked.
+                    result = RegistrationBuilder.ForType(typedService.ServiceType)
+                                            .InstancePerLifetimeScope()
+                                            .CreateRegistration();
+                }
+            }
+            else
+            {
+                result = null;
+            }
+
+            if (result is null)
             {
                 return Enumerable.Empty<IComponentRegistration>();
             }
 
-            var rb = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
-                .As(service)
-                .InstancePerLifetimeScope();
-
-            return new[] { rb.CreateRegistration() };
+            return new[] { result };
         }
 
         private static bool IsIEnumerable(IServiceWithType typedService)
@@ -132,19 +166,19 @@ namespace Autofac.Extras.Moq
                     typedService.ServiceType.GetConstructors().Any(c => c.GetParameters().Length == 0));
         }
 
-        private bool CanMockService(IServiceWithType typedService)
+        private bool ShouldMockService(IServiceWithType typedService)
         {
-            // Since we're calling MockRepository.Create<T>() to auto-mock and we don't provide
-            // parameter support, it means we're limited to only auto-mocking things that can pass
-            // through Moq / Castle.DynamicProxy without any parameters.
-            return !this._createdServiceTypes.Contains(typedService.ServiceType) &&
-                   ServiceCompatibleWithMockRepositoryCreate(typedService) &&
-                   !IsIEnumerable(typedService) &&
+            return !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService) &&
                    !IsInsideAutofac(typedService) &&
                    !IsLazy(typedService) &&
                    !IsOwned(typedService) &&
                    !IsMeta(typedService);
+        }
+
+        private bool ServiceManuallyCreated(IServiceWithType typedService)
+        {
+            return this._createdServiceTypes.Contains(typedService.ServiceType);
         }
 
         private static bool IsLazy(IServiceWithType typedService)

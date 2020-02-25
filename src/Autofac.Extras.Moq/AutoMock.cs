@@ -58,9 +58,10 @@ namespace Autofac.Extras.Moq
             // and Moq being last in are least likely to cause ordering conflicts.
             beforeBuild?.Invoke(builder);
 
-            builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
             builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes));
+
             this.Container = builder.Build();
+
             this.VerifyAll = false;
         }
 

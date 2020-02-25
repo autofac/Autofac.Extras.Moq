@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autofac.Core;
+using Autofac.Core.Registration;
 using Autofac.Features.Metadata;
 using Autofac.Features.OwnedInstances;
+using Moq;
 using Xunit;
 
 namespace Autofac.Extras.Moq.Test
@@ -37,18 +40,18 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegistrationForCreatedType_IsNotHandled()
+        public void RegistrationForCreatedType_IsHandled()
         {
             var createdServiceTypes = new List<Type> { typeof(TestConcreteClass) };
             var handler = new MoqRegistrationHandler(createdServiceTypes);
-            var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), null);
+            var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), s => Enumerable.Empty<IComponentRegistration>());
 
-            Assert.Empty(registrations);
+            Assert.NotEmpty(registrations);
 
             createdServiceTypes.Add(typeof(TestAbstractClass));
-            registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), null);
+            registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), s => Enumerable.Empty<IComponentRegistration>());
 
-            Assert.Empty(registrations);
+            Assert.NotEmpty(registrations);
         }
 
         [Fact]
@@ -62,11 +65,11 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegistrationForSealedConcreteClass_IsNotHandled()
+        public void RegistrationForSealedConcreteClass_IsHandled()
         {
             var registrations = GetRegistrations<TestSealedConcreteClass>();
 
-            Assert.Empty(registrations);
+            Assert.NotEmpty(registrations);
         }
 
         [Fact]
@@ -78,11 +81,11 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void RegistrationsForArrayType_IsNotHandled()
+        public void RegistrationsForArrayType_IsHandled()
         {
             var registrations = GetRegistrations<ITestInterface[]>();
 
-            Assert.Empty(registrations);
+            Assert.NotEmpty(registrations);
         }
 
         [Fact]
@@ -141,9 +144,22 @@ namespace Autofac.Extras.Moq.Test
             Assert.Empty(registrations);
         }
 
-        private IEnumerable<IComponentRegistration> GetRegistrations<T>()
+        [Fact]
+        public void AlreadyRegistered_NotHandled()
         {
-            return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), null);
+            var registrations = GetRegistrations<TestConcreteClass>(s => new[]
+            {
+                new Mock<IComponentRegistration>().Object,
+            });
+
+            Assert.Empty(registrations);
+        }
+
+        private IEnumerable<IComponentRegistration> GetRegistrations<T>(Func<Service, IEnumerable<IComponentRegistration>> regAccessor = null)
+        {
+            regAccessor ??= s => Enumerable.Empty<IComponentRegistration>();
+
+            return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), regAccessor);
         }
 
         private abstract class TestAbstractClass

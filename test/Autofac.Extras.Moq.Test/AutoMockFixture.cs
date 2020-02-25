@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using Xunit;
 
@@ -232,6 +234,71 @@ namespace Autofac.Extras.Moq.Test
                         SetUpSetupations(mock);
                     }
                 });
+        }
+
+        [Fact]
+        public void LooseCreate_SuccessfulOnUnregisteredGeneric()
+        {
+            var mock = AutoMock.GetLoose();
+            Assert.NotNull(mock.Create<GenericClassA<ClassA>>());
+        }
+
+        [Fact]
+        public void MockNotAddedToEnumerableIfTypeIsRegistered()
+        {
+            var autoMock = AutoMock.GetLoose(c =>
+            {
+                c.RegisterType<TestA>().As<ITest>();
+                c.RegisterType<TestB>().As<ITest>();
+
+                c.RegisterType<TestClassConsumesIEnumerable>();
+            });
+
+            var wrapper = autoMock.Create<TestClassConsumesIEnumerable>();
+
+            Assert.Equal(2, wrapper.All.Count());
+        }
+
+        [Fact]
+        public void MockAddedToEnumerableIfNoTypeIsRegistered()
+        {
+            var autoMock = AutoMock.GetLoose();
+
+            var wrapper = autoMock.Create<TestClassConsumesIEnumerable>();
+
+            Assert.Single(wrapper.All);
+        }
+
+        public interface ITest
+        {
+        }
+
+        public class TestA : ITest
+        {
+        }
+
+        public class TestB : ITest
+        {
+        }
+
+        public class TestClassConsumesIEnumerable
+        {
+            public IEnumerable<ITest> All { get; }
+
+            public TestClassConsumesIEnumerable(IEnumerable<ITest> all)
+            {
+                All = all;
+            }
+        }
+
+        public class GenericClassA<T>
+        {
+            private readonly ClassA _dependency;
+
+            public GenericClassA(ClassA dependency)
+            {
+                _dependency = dependency;
+            }
         }
 
         private static void AssertProperties(AutoMock mock)

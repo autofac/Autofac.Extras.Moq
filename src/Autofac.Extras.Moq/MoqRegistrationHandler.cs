@@ -114,13 +114,17 @@ namespace Autofac.Extras.Moq
                                              .InstancePerLifetimeScope()
                                              .CreateRegistration();
                 }
-                else
+                else if (ServiceCompatibleWithAutomaticDirectRegistration(typedService))
                 {
                     // Issue #15 - Incompatible mocks need to be registered using the type.
                     // Their constructor dependencies will then be mocked.
                     result = RegistrationBuilder.ForType(typedService.ServiceType)
                                             .InstancePerLifetimeScope()
                                             .CreateRegistration();
+                }
+                else
+                {
+                    result = null;
                 }
             }
             else
@@ -152,6 +156,17 @@ namespace Autofac.Extras.Moq
         private static bool IsInsideAutofac(IServiceWithType typedService)
         {
             return typeof(IRegistrationSource).Assembly == typedService.ServiceType.Assembly;
+        }
+
+        private static bool ServiceCompatibleWithAutomaticDirectRegistration(IServiceWithType typedService)
+        {
+            var serviceType = typedService.ServiceType;
+
+            return serviceType.IsClass &&
+                   serviceType != typeof(string) &&
+                   !serviceType.IsSubclassOf(typeof(Delegate)) &&
+                   !serviceType.IsAbstract &&
+                   !serviceType.IsGenericTypeDefinition;
         }
 
         private static bool ServiceCompatibleWithMockRepositoryCreate(IServiceWithType typedService)

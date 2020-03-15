@@ -65,6 +65,22 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void RegistrationForNonClass_IsNotHandled()
+        {
+            var registrations = GetRegistrations<int>();
+
+            Assert.Empty(registrations);
+        }
+
+        [Fact]
+        public void RegistrationForString_IsNotHandled()
+        {
+            var registrations = GetRegistrations<string>();
+
+            Assert.Empty(registrations);
+        }
+
+        [Fact]
         public void RegistrationForSealedConcreteClass_IsHandled()
         {
             var registrations = GetRegistrations<TestSealedConcreteClass>();

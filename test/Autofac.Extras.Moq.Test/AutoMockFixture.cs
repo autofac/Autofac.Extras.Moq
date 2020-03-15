@@ -269,6 +269,32 @@ namespace Autofac.Extras.Moq.Test
             Assert.Single(wrapper.All);
         }
 
+        [Fact]
+        public void CreateClassWithParameter()
+        {
+            using (AutoMock autoMock = AutoMock.GetStrict())
+            {
+                var obj = autoMock.Create<ClassWithParameters>(new NamedParameter("param1", 10));
+                Assert.NotNull(obj);
+                Assert.True(obj.InvokedSimpleConstructor);
+            }
+        }
+
+        public class ClassWithParameters
+        {
+            public bool InvokedSimpleConstructor { get; }
+
+            public ClassWithParameters(int param1)
+                : this(param1, TimeSpan.Zero)
+            {
+                InvokedSimpleConstructor = true;
+            }
+
+            public ClassWithParameters(int param1, TimeSpan param2)
+            {
+            }
+        }
+
         public interface ITest
         {
         }

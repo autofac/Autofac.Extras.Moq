@@ -40,7 +40,8 @@ namespace Autofac.Extras.Moq
     {
         private bool _disposed;
 
-        private readonly List<Type> _createdServiceTypes = new List<Type>();
+        private readonly HashSet<Type> _createdServiceTypes = new HashSet<Type>();
+        private readonly HashSet<Type> _mockedServiceTypes = new HashSet<Type>();
 
         private AutoMock(MockBehavior behavior, Action<ContainerBuilder> beforeBuild)
             : this(new MockRepository(behavior), beforeBuild)
@@ -58,7 +59,7 @@ namespace Autofac.Extras.Moq
             // and Moq being last in are least likely to cause ordering conflicts.
             beforeBuild?.Invoke(builder);
 
-            builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes));
+            builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes, _mockedServiceTypes));
 
             this.Container = builder.Build();
 
@@ -198,8 +199,14 @@ namespace Autofac.Extras.Moq
 
         private T Create<T>(bool isMock, params Parameter[] parameters)
         {
-            if (!isMock && !_createdServiceTypes.Contains(typeof(T)))
+            if (isMock)
+            {
+                _mockedServiceTypes.Add(typeof(T));
+            }
+            else
+            {
                 _createdServiceTypes.Add(typeof(T));
+            }
 
             return this.Container.Resolve<T>(parameters);
         }

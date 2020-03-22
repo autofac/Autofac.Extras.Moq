@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Autofac.Builder;
 using Autofac.Core;
 using Autofac.Features.Metadata;
@@ -41,17 +42,20 @@ namespace Autofac.Extras.Moq
     /// </summary>
     internal class MoqRegistrationHandler : IRegistrationSource
     {
-        private readonly IList<Type> _createdServiceTypes;
+        private readonly ISet<Type> _createdServiceTypes;
+        private readonly ISet<Type> _mockedServiceTypes;
 
         private readonly MethodInfo _createMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
         /// </summary>
-        /// <param name="createdServiceTypes">A list of root services that have been created.</param>
-        public MoqRegistrationHandler(IList<Type> createdServiceTypes)
+        /// <param name="createdServiceTypes">A set of root services that have been created.</param>
+        /// <param name="mockedServiceTypes">A set of mocks that have been explicitly configured.</param>
+        public MoqRegistrationHandler(ISet<Type> createdServiceTypes, ISet<Type> mockedServiceTypes)
         {
             this._createdServiceTypes = createdServiceTypes;
+            this._mockedServiceTypes = mockedServiceTypes;
 
             // This is MockRepository.Create<T>() with zero parameters. This is important because
             // it limits what can be auto-mocked.
@@ -107,7 +111,9 @@ namespace Autofac.Extras.Moq
             }
             else if (ShouldMockService(typedService))
             {
-                if (ServiceCompatibleWithMockRepositoryCreate(typedService))
+                // If a mock has been explicitly requested, then always try it.
+                // This will ensure mocking exceptions get properly thrown.
+                if (_mockedServiceTypes.Contains(typedService.ServiceType) || ServiceCompatibleWithMockRepositoryCreate(typedService))
                 {
                     result = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
                                              .As(service)
@@ -231,9 +237,20 @@ namespace Autofac.Extras.Moq
         /// </returns>
         private object CreateMock(IComponentContext context, TypedService typedService)
         {
-            var specificCreateMethod = this._createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
-            var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null);
-            return mock.Object;
+            try
+            {
+                var specificCreateMethod = this._createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
+                var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null);
+                return mock.Object;
+            }
+            catch (TargetInvocationException ex)
+            {
+                // Expose the inner exception as if it was directly thrown.
+                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+
+                // Won't get here, but the compiler doesn't know that.
+                throw ex.InnerException;
+            }
         }
     }
 }

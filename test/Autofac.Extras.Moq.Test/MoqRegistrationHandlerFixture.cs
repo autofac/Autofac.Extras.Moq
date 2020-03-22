@@ -16,7 +16,7 @@ namespace Autofac.Extras.Moq.Test
 
         public MoqRegistrationHandlerFixture()
         {
-            this._systemUnderTest = new MoqRegistrationHandler(new List<Type>());
+            this._systemUnderTest = new MoqRegistrationHandler(new HashSet<Type>(), new HashSet<Type>());
         }
 
         private interface ISomethingStartable : IStartable
@@ -42,8 +42,8 @@ namespace Autofac.Extras.Moq.Test
         [Fact]
         public void RegistrationForCreatedType_IsHandled()
         {
-            var createdServiceTypes = new List<Type> { typeof(TestConcreteClass) };
-            var handler = new MoqRegistrationHandler(createdServiceTypes);
+            var createdServiceTypes = new HashSet<Type> { typeof(TestConcreteClass) };
+            var handler = new MoqRegistrationHandler(createdServiceTypes, new HashSet<Type>());
             var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), s => Enumerable.Empty<IComponentRegistration>());
 
             Assert.NotEmpty(registrations);

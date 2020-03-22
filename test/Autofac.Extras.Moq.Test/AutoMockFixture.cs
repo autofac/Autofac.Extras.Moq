@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autofac.Core;
 using Moq;
 using Xunit;
 
@@ -278,6 +279,38 @@ namespace Autofac.Extras.Moq.Test
                 Assert.NotNull(obj);
                 Assert.True(obj.InvokedSimpleConstructor);
             }
+        }
+
+        [Fact]
+        public void MockedClassWithConstructorThrows()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                mock.Mock<IDependency>().Setup(s => s.DoSomethingExternal()).Returns(7);
+                Assert.Throws<DependencyResolutionException>(() => mock.Mock<ClassWithDependency>());
+            }
+        }
+
+        public class ClassWithDependency
+        {
+            private readonly IDependency _dependency;
+
+            public ClassWithDependency(IDependency dependency)
+            {
+                _dependency = dependency;
+            }
+
+            public int DoSomeThing() => 0;
+        }
+
+        public class Dependency : IDependency
+        {
+            public int DoSomethingExternal() => 0;
+        }
+
+        public interface IDependency
+        {
+            int DoSomethingExternal();
         }
 
         public class ClassWithParameters

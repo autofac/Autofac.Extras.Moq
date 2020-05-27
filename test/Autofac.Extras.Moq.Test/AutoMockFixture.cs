@@ -89,6 +89,41 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void DisposableDoesntThrowIfNotSetupInStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                // No setup for strict mock on IDisposable
+                // Should not throw on dispose of AutoMock.
+                var sut = mock.Create<ConsumesDisposable>();
+            }
+        }
+
+        [Fact]
+        public void DisposableDoesThrowIfNotSetupAndDisposedBySutInStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                var sut = mock.Create<DisposesDisposable>();
+
+                Assert.Throws<MockException>(() => sut.DisposeDependency());
+            }
+        }
+
+        [Fact]
+        public void DisposableDoesNotThrowIfSetupAndDisposedBySutInStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                mock.Mock<IInheritFromDisposable>().Setup(x => x.Dispose());
+                var sut = mock.Create<DisposesDisposable>();
+
+                // No throw
+                sut.DisposeDependency();
+            }
+        }
+
+        [Fact]
         public void GetFromRepositoryUsesLooseBehaviorSetOnRepository()
         {
             using (var mock = AutoMock.GetFromRepository(new MockRepository(MockBehavior.Loose)))
@@ -419,6 +454,20 @@ namespace Autofac.Extras.Moq.Test
             public ConsumesDisposable(IInheritFromDisposable disposable)
             {
                 this._disposable = disposable;
+            }
+        }
+
+        public class DisposesDisposable {
+            private IInheritFromDisposable _disposable;
+
+            public DisposesDisposable(IInheritFromDisposable disposable)
+            {
+                this._disposable = disposable;
+            }
+
+            public void DisposeDependency()
+            {
+                this._disposable.Dispose();
             }
         }
 

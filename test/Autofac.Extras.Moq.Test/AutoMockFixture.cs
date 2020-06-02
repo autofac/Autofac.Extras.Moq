@@ -124,6 +124,20 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void DisposableDoesNotThrowWhenContainerIsDisposedWhenRegisteredManually()
+        {
+            var mock = new Mock<IDisposable>(MockBehavior.Strict);
+            using (var automock = AutoMock.GetStrict(cfg => cfg.RegisterMock(mock)))
+            {
+                var sut = automock.Create<ConsumesDisposable>();
+
+                // no throw.
+            }
+        }
+
+
+
+        [Fact]
         public void GetFromRepositoryUsesLooseBehaviorSetOnRepository()
         {
             using (var mock = AutoMock.GetFromRepository(new MockRepository(MockBehavior.Loose)))

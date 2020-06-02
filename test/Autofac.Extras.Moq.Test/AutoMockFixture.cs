@@ -135,7 +135,20 @@ namespace Autofac.Extras.Moq.Test
             }
         }
 
+        [Fact]
+        public void ConcreteDependencyTypesThatImplementDisposableAreDisposedWhenContainerDisposes()
+        {
+            RequiresAConcreteDisposableType sut;
+            using (var mock = AutoMock.GetStrict())
+            {
+                sut = mock.Create<RequiresAConcreteDisposableType>();
 
+                Assert.False(sut.DependencyDisposed);
+                // Dispose sut
+            }
+
+            Assert.True(sut.DependencyDisposed);
+        }
 
         [Fact]
         public void GetFromRepositoryUsesLooseBehaviorSetOnRepository()
@@ -471,7 +484,8 @@ namespace Autofac.Extras.Moq.Test
             }
         }
 
-        public class DisposesDisposable {
+        public class DisposesDisposable : IDisposable
+        {
             private IInheritFromDisposable _disposable;
 
             public DisposesDisposable(IInheritFromDisposable disposable)
@@ -479,10 +493,29 @@ namespace Autofac.Extras.Moq.Test
                 this._disposable = disposable;
             }
 
+            public bool Disposed { get; private set; } = false;
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+
             public void DisposeDependency()
             {
                 this._disposable.Dispose();
             }
+        }
+
+        public class RequiresAConcreteDisposableType
+        {
+            private readonly DisposesDisposable disposesDisposable;
+
+            public RequiresAConcreteDisposableType(DisposesDisposable disposesDisposable)
+            {
+                this.disposesDisposable = disposesDisposable;
+            }
+
+            public bool DependencyDisposed => disposesDisposable.Disposed;
         }
 
         public class ConsumesConcreteTypeWithoutDefaultConstructor

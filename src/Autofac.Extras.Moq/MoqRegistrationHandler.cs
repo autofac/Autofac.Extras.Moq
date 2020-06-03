@@ -118,6 +118,7 @@ namespace Autofac.Extras.Moq
                     result = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
                                              .As(service)
                                              .InstancePerLifetimeScope()
+                                             .ExternallyOwned()
                                              .CreateRegistration();
                 }
                 else if (ServiceCompatibleWithAutomaticDirectRegistration(typedService))

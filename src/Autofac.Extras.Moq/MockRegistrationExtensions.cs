@@ -48,7 +48,7 @@ namespace Autofac.Extras.Moq
                 throw new System.ArgumentNullException(nameof(mock));
             }
 
-            return builder.RegisterInstance(mock.Object).As<TMocked>();
+            return builder.RegisterInstance(mock.Object).As<TMocked>().ExternallyOwned();
         }
     }
 }

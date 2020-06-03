@@ -89,6 +89,68 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
+        public void DisposableDoesntThrowIfNotSetupInStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                // No setup for strict mock on IDisposable
+                // Should not throw on dispose of AutoMock.
+                var sut = mock.Create<ConsumesDisposable>();
+            }
+        }
+
+        [Fact]
+        public void DisposableDoesThrowIfNotSetupAndDisposedBySutInStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                var sut = mock.Create<DisposesDisposable>();
+
+                Assert.Throws<MockException>(() => sut.DisposeDependency());
+            }
+        }
+
+        [Fact]
+        public void DisposableDoesNotThrowIfSetupAndDisposedBySutInStrictMocking()
+        {
+            using (var mock = AutoMock.GetStrict())
+            {
+                mock.Mock<IInheritFromDisposable>().Setup(x => x.Dispose());
+                var sut = mock.Create<DisposesDisposable>();
+
+                // No throw
+                sut.DisposeDependency();
+            }
+        }
+
+        [Fact]
+        public void DisposableDoesNotThrowWhenContainerIsDisposedWhenRegisteredManually()
+        {
+            var mock = new Mock<IDisposable>(MockBehavior.Strict);
+            using (var automock = AutoMock.GetStrict(cfg => cfg.RegisterMock(mock)))
+            {
+                var sut = automock.Create<ConsumesDisposable>();
+
+                // no throw.
+            }
+        }
+
+        [Fact]
+        public void ConcreteDependencyTypesThatImplementDisposableAreDisposedWhenContainerDisposes()
+        {
+            RequiresAConcreteDisposableType sut;
+            using (var mock = AutoMock.GetStrict())
+            {
+                sut = mock.Create<RequiresAConcreteDisposableType>();
+
+                Assert.False(sut.DependencyDisposed);
+                // Dispose sut
+            }
+
+            Assert.True(sut.DependencyDisposed);
+        }
+
+        [Fact]
         public void GetFromRepositoryUsesLooseBehaviorSetOnRepository()
         {
             using (var mock = AutoMock.GetFromRepository(new MockRepository(MockBehavior.Loose)))
@@ -420,6 +482,40 @@ namespace Autofac.Extras.Moq.Test
             {
                 this._disposable = disposable;
             }
+        }
+
+        public class DisposesDisposable : IDisposable
+        {
+            private IInheritFromDisposable _disposable;
+
+            public DisposesDisposable(IInheritFromDisposable disposable)
+            {
+                this._disposable = disposable;
+            }
+
+            public bool Disposed { get; private set; } = false;
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+
+            public void DisposeDependency()
+            {
+                this._disposable.Dispose();
+            }
+        }
+
+        public class RequiresAConcreteDisposableType
+        {
+            private readonly DisposesDisposable disposesDisposable;
+
+            public RequiresAConcreteDisposableType(DisposesDisposable disposesDisposable)
+            {
+                this.disposesDisposable = disposesDisposable;
+            }
+
+            public bool DependencyDisposed => disposesDisposable.Disposed;
         }
 
         public class ConsumesConcreteTypeWithoutDefaultConstructor

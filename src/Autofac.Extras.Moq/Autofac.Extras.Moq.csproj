@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.1.1" />
+    <PackageReference Include="Autofac" Version="6.0.0-develop-01130" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>

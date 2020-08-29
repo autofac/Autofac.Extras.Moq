@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac.Core;
 using Autofac.Core.Registration;
+using Autofac.Core.Resolving.Pipeline;
 using Autofac.Features.Metadata;
 using Autofac.Features.OwnedInstances;
 using Moq;
@@ -44,12 +45,12 @@ namespace Autofac.Extras.Moq.Test
         {
             var createdServiceTypes = new HashSet<Type> { typeof(TestConcreteClass) };
             var handler = new MoqRegistrationHandler(createdServiceTypes, new HashSet<Type>());
-            var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), s => Enumerable.Empty<IComponentRegistration>());
+            var registrations = handler.RegistrationsFor(new TypedService(typeof(TestConcreteClass)), s => Enumerable.Empty<ServiceRegistration>());
 
             Assert.NotEmpty(registrations);
 
             createdServiceTypes.Add(typeof(TestAbstractClass));
-            registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), s => Enumerable.Empty<IComponentRegistration>());
+            registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), s => Enumerable.Empty<ServiceRegistration>());
 
             Assert.NotEmpty(registrations);
         }
@@ -165,15 +166,15 @@ namespace Autofac.Extras.Moq.Test
         {
             var registrations = GetRegistrations<TestConcreteClass>(s => new[]
             {
-                new Mock<IComponentRegistration>().Object,
+                new ServiceRegistration(new Mock<IResolvePipeline>().Object, new Mock<IComponentRegistration>().Object),
             });
 
             Assert.Empty(registrations);
         }
 
-        private IEnumerable<IComponentRegistration> GetRegistrations<T>(Func<Service, IEnumerable<IComponentRegistration>> regAccessor = null)
+        private IEnumerable<IComponentRegistration> GetRegistrations<T>(Func<Service, IEnumerable<ServiceRegistration>> regAccessor = null)
         {
-            regAccessor ??= s => Enumerable.Empty<IComponentRegistration>();
+            regAccessor ??= s => Enumerable.Empty<ServiceRegistration>();
 
             return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), regAccessor);
         }

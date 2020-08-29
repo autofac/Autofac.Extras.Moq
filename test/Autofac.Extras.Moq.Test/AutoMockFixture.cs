@@ -144,7 +144,6 @@ namespace Autofac.Extras.Moq.Test
                 sut = mock.Create<RequiresAConcreteDisposableType>();
 
                 Assert.False(sut.DependencyDisposed);
-                // Dispose sut
             }
 
             Assert.True(sut.DependencyDisposed);

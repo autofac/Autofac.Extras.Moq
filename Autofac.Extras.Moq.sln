@@ -1,8 +1,16 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E3CCAB0F-900D-48DF-A42C-963E56973E4E}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		build.ps1 = build.ps1
+		global.json = global.json
+		LICENSE = LICENSE
+		NuGet.Config = NuGet.Config
+		README.md = README.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Autofac.Extras.Moq", "src\Autofac.Extras.Moq\Autofac.Extras.Moq.csproj", "{7FC6DCED-278A-449B-8BB0-95346410C8D2}"
 EndProject

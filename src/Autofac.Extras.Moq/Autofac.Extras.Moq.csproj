@@ -2,20 +2,20 @@
 
   <PropertyGroup>
     <Description>Autofac extension for automocking and creation of mock objects in Moq.</Description>
-    <VersionPrefix>5.0.1</VersionPrefix>
+    <!-- VersionPrefix patched by AppVeyor -->
+    <VersionPrefix>0.0.1</VersionPrefix>
     <TargetFrameworks>net461;netstandard2.0;netstandard2.1</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Autofac.Extras.Moq</AssemblyName>
     <AssemblyOriginatorKeyFile>../../Autofac.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Autofac.Extras.Moq</PackageId>
     <PackageTags>autofac;di;ioc;dependencyinjection;moq</PackageTags>
     <PackageReleaseNotes>Release notes are at https://github.com/autofac/Autofac.Extras.Moq/releases</PackageReleaseNotes>
-    <PackageIconUrl>https://cloud.githubusercontent.com/assets/1156571/13684110/16b8f152-e6bf-11e5-84ae-22c66c6d351a.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://autofac.org</PackageProjectUrl>
-    <PackageLicenseUrl>https://opensource.org/licenses/mit-license.php</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/autofac/Autofac.Extras.Moq</RepositoryUrl>
     <CodeAnalysisRuleSet>../../build/Analyzers.ruleset</CodeAnalysisRuleSet>
@@ -29,7 +29,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.1.1" />
+    <None Include="..\..\build\icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>

@@ -87,7 +87,7 @@ namespace Autofac.Extras.Moq
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Registry handles disposal")]
         public IEnumerable<IComponentRegistration> RegistrationsFor(
             Service service,
-            Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
+            Func<Service, IEnumerable<ServiceRegistration>> registrationAccessor)
         {
             if (service == null)
             {
@@ -118,6 +118,7 @@ namespace Autofac.Extras.Moq
                     result = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
                                              .As(service)
                                              .InstancePerLifetimeScope()
+                                             .ExternallyOwned()
                                              .CreateRegistration();
                 }
                 else if (ServiceCompatibleWithAutomaticDirectRegistration(typedService))

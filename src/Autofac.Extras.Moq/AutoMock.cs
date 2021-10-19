@@ -176,6 +176,17 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
+        /// Resolve the specified type in the container (register it if needed).
+        /// </summary>
+        /// <param name="serviceType">type of service</param>
+        /// <param name="parameters">Optional parameters.</param>
+        /// <returns>The service.</returns>
+        public object Create(Type serviceType, params Parameter[] parameters)
+        {
+            return Create(false, serviceType, parameters);
+        }
+
+        /// <summary>
         /// Verifies mocks and disposes internal container.
         /// </summary>
         public void Dispose()
@@ -197,18 +208,23 @@ namespace Autofac.Extras.Moq
             return obj.Mock;
         }
 
-        private T Create<T>(bool isMock, params Parameter[] parameters)
+        private object Create(bool isMock, Type serviceType, params Parameter[] parameters) 
         {
             if (isMock)
             {
-                _mockedServiceTypes.Add(typeof(T));
+                _mockedServiceTypes.Add(serviceType);
             }
             else
             {
-                _createdServiceTypes.Add(typeof(T));
+                _createdServiceTypes.Add(serviceType);
             }
 
-            return this.Container.Resolve<T>(parameters);
+            return this.Container.Resolve(serviceType, parameters);
+        }
+
+        private T Create<T>(bool isMock, params Parameter[] parameters)
+        {
+            return (T)Create(isMock, typeof(T), parameters);
         }
 
         /// <summary>

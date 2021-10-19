@@ -178,7 +178,7 @@ namespace Autofac.Extras.Moq
         /// <summary>
         /// Resolve the specified type in the container (register it if needed).
         /// </summary>
-        /// <param name="serviceType">type of service</param>
+        /// <param name="serviceType">Type of service.</param>
         /// <param name="parameters">Optional parameters.</param>
         /// <returns>The service.</returns>
         public object Create(Type serviceType, params Parameter[] parameters)
@@ -208,7 +208,7 @@ namespace Autofac.Extras.Moq
             return obj.Mock;
         }
 
-        private object Create(bool isMock, Type serviceType, params Parameter[] parameters) 
+        private object Create(bool isMock, Type serviceType, params Parameter[] parameters)
         {
             if (isMock)
             {

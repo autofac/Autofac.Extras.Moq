@@ -1,3 +1,5 @@
+image: Ubuntu
+
 version: 6.1.0.{build}
 
 dotnet_csproj:
@@ -21,7 +23,7 @@ clone_depth: 1
 test: off
 
 build_script:
-- ps: .\build.ps1
+  - pwsh: .\build.ps1
 
 artifacts:
 - path: artifacts\packages\**\*.nupkg

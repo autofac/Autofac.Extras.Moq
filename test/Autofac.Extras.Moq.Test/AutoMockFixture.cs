@@ -352,6 +352,18 @@ namespace Autofac.Extras.Moq.Test
             }
         }
 
+        [Fact]
+        public void CreateNonGenericSameAsCreateGeneric() 
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var generic = mock.Create<ServiceA>();
+                var nonGeneric = mock.Create(typeof(ServiceA));
+
+                Assert.Same(generic, nonGeneric);
+            }
+        }
+
         public class ClassWithDependency
         {
             private readonly IDependency _dependency;

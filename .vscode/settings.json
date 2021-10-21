@@ -1,9 +1,11 @@
 {
+  "cSpell.words": [
+    "actnars",
+    "autofac",
+    "codecov",
+    "xunit"
+  ],
   "dotnet-test-explorer.testProjectPath": "test/**/*Test.csproj",
   "omnisharp.enableEditorConfigSupport": true,
-  "omnisharp.enableRoslynAnalyzers": true,
-  "cSpell.words": [
-    "ACTNARS",
-    "Xunit"
-  ]
+  "omnisharp.enableRoslynAnalyzers": true
 }

@@ -2,9 +2,7 @@
 
 Moq auto mocking integration for [Autofac IoC](https://github.com/autofac/Autofac).
 
-|AppVeyor|Travis CI|
-|--------|---------|
-| [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/8c7natm3bsmn7ebx?svg=true)](https://ci.appveyor.com/project/Autofac/autofac-extras-moq) | [![Travis Build Status](https://travis-ci.org/autofac/Autofac.Extras.Moq.svg?branch=develop)](https://travis-ci.org/autofac/Autofac.Extras.Moq) |
+[![Build status](https://ci.appveyor.com/api/projects/status/8c7natm3bsmn7ebx?svg=true)](https://ci.appveyor.com/project/Autofac/autofac-extras-moq) [![codecov](https://codecov.io/gh/Autofac/Autofac.Extras.Moq/branch/develop/graph/badge.svg)](https://app.codecov.io/gh/autofac/Autofac.Extras.Moq) [![NuGet](https://img.shields.io/nuget/v/Autofac.Extras.Moq.svg)](https://nuget.org/packages/Autofac.Extras.Moq)
 
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/autofac/Autofac.Extras.Moq)
 

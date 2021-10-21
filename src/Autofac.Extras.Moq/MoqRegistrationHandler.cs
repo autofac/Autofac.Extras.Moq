@@ -1,27 +1,5 @@
-// This software is part of the Autofac IoC container
-// Copyright (c) 2007-2008 Autofac Contributors
-// https://autofac.org
-//
-// Permission is hereby granted, free of charge, to any person
-// obtaining a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use,
-// copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following
-// conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
+// Copyright (c) Autofac Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -54,13 +32,13 @@ namespace Autofac.Extras.Moq
         /// <param name="mockedServiceTypes">A set of mocks that have been explicitly configured.</param>
         public MoqRegistrationHandler(ISet<Type> createdServiceTypes, ISet<Type> mockedServiceTypes)
         {
-            this._createdServiceTypes = createdServiceTypes;
-            this._mockedServiceTypes = mockedServiceTypes;
+            _createdServiceTypes = createdServiceTypes;
+            _mockedServiceTypes = mockedServiceTypes;
 
             // This is MockRepository.Create<T>() with zero parameters. This is important because
             // it limits what can be auto-mocked.
             var factoryType = typeof(MockRepository);
-            this._createMethod = factoryType.GetMethod(nameof(MockRepository.Create), Array.Empty<Type>());
+            _createMethod = factoryType.GetMethod(nameof(MockRepository.Create), Array.Empty<Type>());
         }
 
         /// <summary>
@@ -115,7 +93,7 @@ namespace Autofac.Extras.Moq
                 // This will ensure mocking exceptions get properly thrown.
                 if (_mockedServiceTypes.Contains(typedService.ServiceType) || ServiceCompatibleWithMockRepositoryCreate(typedService))
                 {
-                    result = RegistrationBuilder.ForDelegate((c, p) => this.CreateMock(c, typedService))
+                    result = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService))
                                              .As(service)
                                              .InstancePerLifetimeScope()
                                              .ExternallyOwned()
@@ -188,7 +166,7 @@ namespace Autofac.Extras.Moq
                     typedService.ServiceType.GetConstructors().Any(c => c.GetParameters().Length == 0));
         }
 
-        private bool ShouldMockService(IServiceWithType typedService)
+        private static bool ShouldMockService(IServiceWithType typedService)
         {
             return !IsIEnumerable(typedService) &&
                    !IsIStartable(typedService) &&
@@ -200,7 +178,7 @@ namespace Autofac.Extras.Moq
 
         private bool ServiceManuallyCreated(IServiceWithType typedService)
         {
-            return this._createdServiceTypes.Contains(typedService.ServiceType);
+            return _createdServiceTypes.Contains(typedService.ServiceType);
         }
 
         private static bool IsLazy(IServiceWithType typedService)
@@ -240,7 +218,7 @@ namespace Autofac.Extras.Moq
         {
             try
             {
-                var specificCreateMethod = this._createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
+                var specificCreateMethod = _createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
                 var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null);
                 return mock.Object;
             }

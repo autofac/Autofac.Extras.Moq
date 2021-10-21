@@ -1,13 +1,13 @@
-version: 6.0.0.{build}
+image: Ubuntu
+
+version: 6.1.0.{build}
 
 dotnet_csproj:
-  version_prefix: '6.0.0'
+  version_prefix: '6.1.0'
   patch: true
   file: 'src\**\*.csproj'
 
 configuration: Release
-
-os: Visual Studio 2019
 
 environment:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -23,7 +23,7 @@ clone_depth: 1
 test: off
 
 build_script:
-- ps: .\build.ps1
+  - pwsh: .\build.ps1
 
 artifacts:
 - path: artifacts\packages\**\*.nupkg
@@ -33,7 +33,7 @@ deploy:
 - provider: NuGet
   server: https://www.myget.org/F/autofac/api/v2/package
   api_key:
-    secure: rCUEY75fXN0wxtMy6QL4jCrLdaYbxIBzIXWeN+wEu/XDpyqimzreOc5AH5jMd5ah
+    secure: xUXExgVAagrdEicCjSxsQVrwiLo2TtnfqMbYB9Cauq2cpbm/EVz957PBK0v/GEYq
   skip_symbols: true
   symbol_server: https://www.myget.org/F/autofac/symbols/api/v2/package
   artifact: MyGet

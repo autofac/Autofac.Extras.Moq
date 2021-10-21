@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Autofac Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autofac.Core;
-using Autofac.Core.Registration;
 using Autofac.Core.Resolving.Pipeline;
 using Autofac.Features.Metadata;
 using Autofac.Features.OwnedInstances;
@@ -17,7 +19,7 @@ namespace Autofac.Extras.Moq.Test
 
         public MoqRegistrationHandlerFixture()
         {
-            this._systemUnderTest = new MoqRegistrationHandler(new HashSet<Type>(), new HashSet<Type>());
+            _systemUnderTest = new MoqRegistrationHandler(new HashSet<Type>(), new HashSet<Type>());
         }
 
         private interface ISomethingStartable : IStartable
@@ -58,7 +60,7 @@ namespace Autofac.Extras.Moq.Test
         [Fact]
         public void RegistrationForNonTypedService_IsNotHandled()
         {
-            var registrations = this._systemUnderTest.RegistrationsFor(
+            var registrations = _systemUnderTest.RegistrationsFor(
                 new KeyedService("key", typeof(string)),
                 null);
 
@@ -176,7 +178,7 @@ namespace Autofac.Extras.Moq.Test
         {
             regAccessor ??= s => Enumerable.Empty<ServiceRegistration>();
 
-            return this._systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), regAccessor);
+            return _systemUnderTest.RegistrationsFor(new TypedService(typeof(T)), regAccessor);
         }
 
         private abstract class TestAbstractClass

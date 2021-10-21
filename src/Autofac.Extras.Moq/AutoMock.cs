@@ -1,27 +1,5 @@
-// This software is part of the Autofac IoC container
-// Copyright (c) 2013 Autofac Contributors
-// https://autofac.org
-//
-// Permission is hereby granted, free of charge, to any person
-// obtaining a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without
-// restriction, including without limitation the rights to use,
-// copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following
-// conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
+// Copyright (c) Autofac Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -50,9 +28,9 @@ namespace Autofac.Extras.Moq
 
         private AutoMock(MockRepository repository, Action<ContainerBuilder> beforeBuild)
         {
-            this.MockRepository = repository;
+            MockRepository = repository;
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(this.MockRepository);
+            builder.RegisterInstance(MockRepository);
 
             // The action happens after instance registrations but before source registrations
             // to avoid issues like ContravariantRegistrationSource order challenges. ACTNARS
@@ -61,9 +39,9 @@ namespace Autofac.Extras.Moq
 
             builder.RegisterSource(new MoqRegistrationHandler(_createdServiceTypes, _mockedServiceTypes));
 
-            this.Container = builder.Build();
+            Container = builder.Build();
 
-            this.VerifyAll = false;
+            VerifyAll = false;
         }
 
         /// <summary>
@@ -71,7 +49,7 @@ namespace Autofac.Extras.Moq
         /// </summary>
         ~AutoMock()
         {
-            this.Dispose(false);
+            Dispose(false);
         }
 
         /// <summary>
@@ -176,11 +154,22 @@ namespace Autofac.Extras.Moq
         }
 
         /// <summary>
+        /// Resolve the specified type in the container (register it if needed).
+        /// </summary>
+        /// <param name="serviceType">Type of service.</param>
+        /// <param name="parameters">Optional parameters.</param>
+        /// <returns>The service.</returns>
+        public object Create(Type serviceType, params Parameter[] parameters)
+        {
+            return Create(false, serviceType, parameters);
+        }
+
+        /// <summary>
         /// Verifies mocks and disposes internal container.
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -197,18 +186,23 @@ namespace Autofac.Extras.Moq
             return obj.Mock;
         }
 
-        private T Create<T>(bool isMock, params Parameter[] parameters)
+        private object Create(bool isMock, Type serviceType, params Parameter[] parameters)
         {
             if (isMock)
             {
-                _mockedServiceTypes.Add(typeof(T));
+                _mockedServiceTypes.Add(serviceType);
             }
             else
             {
-                _createdServiceTypes.Add(typeof(T));
+                _createdServiceTypes.Add(serviceType);
             }
 
-            return this.Container.Resolve<T>(parameters);
+            return Container.Resolve(serviceType, parameters);
+        }
+
+        private T Create<T>(bool isMock, params Parameter[] parameters)
+        {
+            return (T)Create(isMock, typeof(T), parameters);
         }
 
         /// <summary>
@@ -222,7 +216,7 @@ namespace Autofac.Extras.Moq
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!this._disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -231,22 +225,22 @@ namespace Autofac.Extras.Moq
                     // collected during finalization.
                     try
                     {
-                        if (this.VerifyAll)
+                        if (VerifyAll)
                         {
-                            this.MockRepository.VerifyAll();
+                            MockRepository.VerifyAll();
                         }
                         else
                         {
-                            this.MockRepository.Verify();
+                            MockRepository.Verify();
                         }
                     }
                     finally
                     {
-                        this.Container.Dispose();
+                        Container.Dispose();
                     }
                 }
 
-                this._disposed = true;
+                _disposed = true;
             }
         }
     }

@@ -1,3 +1,6 @@
+// Copyright (c) Autofac Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +67,7 @@ namespace Autofac.Extras.Moq.Test
         {
             using (var mock = AutoMock.GetLoose())
             {
-                RunWithSingleSetupationTest(mock);
+                RunWithSingleExpectationTest(mock);
             }
         }
 
@@ -154,7 +157,7 @@ namespace Autofac.Extras.Moq.Test
         {
             using (var mock = AutoMock.GetFromRepository(new MockRepository(MockBehavior.Loose)))
             {
-                RunWithSingleSetupationTest(mock);
+                RunWithSingleExpectationTest(mock);
             }
         }
 
@@ -163,25 +166,25 @@ namespace Autofac.Extras.Moq.Test
         {
             using (var mock = AutoMock.GetFromRepository(new MockRepository(MockBehavior.Strict)))
             {
-                Assert.Throws<MockException>(() => RunWithSingleSetupationTest(mock));
+                Assert.Throws<MockException>(() => RunWithSingleExpectationTest(mock));
             }
         }
 
         [Fact]
-        public void LooseWorksWithUnmetSetupations()
+        public void LooseWorksWithUnmetExpectations()
         {
             using (var loose = AutoMock.GetLoose())
             {
-                RunWithSingleSetupationTest(loose);
+                RunWithSingleExpectationTest(loose);
             }
         }
 
         [Fact]
-        public void NormalSetupationsAreNotVerifiedByDefault()
+        public void NormalExpectationsAreNotVerifiedByDefault()
         {
             using (var mock = AutoMock.GetLoose())
             {
-                SetUpSetupations(mock);
+                SetUpExpectations(mock);
             }
         }
 
@@ -246,7 +249,7 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void StrictWorksWithAllSetupationsMet()
+        public void StrictWorksWithAllExpectationsMet()
         {
             using (var strict = AutoMock.GetStrict())
             {
@@ -255,28 +258,28 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void UnmetSetupationWithStrictMocksThrowsException()
+        public void UnmetExpectationWithStrictMocksThrowsException()
         {
             using (var mock = AutoMock.GetStrict())
             {
-                Assert.Throws<MockException>(() => RunWithSingleSetupationTest(mock));
+                Assert.Throws<MockException>(() => RunWithSingleExpectationTest(mock));
             }
         }
 
         [Fact]
-        public void UnmetVerifiableSetupationsCauseExceptionByDefault()
+        public void UnmetVerifiableExpectationsCauseExceptionByDefault()
         {
             Assert.Throws<MockException>(() =>
                 {
                     using (var mock = AutoMock.GetLoose())
                     {
-                        SetUpVerifableSetupations(mock);
+                        SetUpVerifiableExpectations(mock);
                     }
                 });
         }
 
         [Fact]
-        public void VerifyAllSetTrue_SetupationsAreVerified()
+        public void VerifyAllSetTrue_ExpectationsAreVerified()
         {
             using (var mock = AutoMock.GetLoose())
             {
@@ -286,14 +289,14 @@ namespace Autofac.Extras.Moq.Test
         }
 
         [Fact]
-        public void VerifyAllSetTrue_UnmetSetupationsCauseException()
+        public void VerifyAllSetTrue_UnmetExpectationsCauseException()
         {
             Assert.Throws<MockException>(() =>
                 {
                     using (var mock = AutoMock.GetLoose())
                     {
                         mock.VerifyAll = true;
-                        SetUpSetupations(mock);
+                        SetUpExpectations(mock);
                     }
                 });
         }
@@ -349,6 +352,18 @@ namespace Autofac.Extras.Moq.Test
             {
                 mock.Mock<IDependency>().Setup(s => s.DoSomethingExternal()).Returns(7);
                 Assert.Throws<DependencyResolutionException>(() => mock.Mock<ClassWithDependency>());
+            }
+        }
+
+        [Fact]
+        public void CreateNonGenericSameAsCreateGeneric()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                var generic = mock.Create<ServiceA>();
+                var nonGeneric = mock.Create(typeof(ServiceA));
+
+                Assert.Same(generic, nonGeneric);
             }
         }
 
@@ -428,13 +443,13 @@ namespace Autofac.Extras.Moq.Test
 
         private static void RunTest(AutoMock mock)
         {
-            SetUpSetupations(mock);
+            SetUpExpectations(mock);
 
             var component = mock.Create<TestComponent>();
             component.RunAll();
         }
 
-        private static void RunWithSingleSetupationTest(AutoMock mock)
+        private static void RunWithSingleExpectationTest(AutoMock mock)
         {
             mock.Mock<IServiceB>().Setup(x => x.RunB());
 
@@ -442,13 +457,13 @@ namespace Autofac.Extras.Moq.Test
             component.RunAll();
         }
 
-        private static void SetUpSetupations(AutoMock mock)
+        private static void SetUpExpectations(AutoMock mock)
         {
             mock.Mock<IServiceB>().Setup(x => x.RunB());
             mock.Mock<IServiceA>().Setup(x => x.RunA());
         }
 
-        private static void SetUpVerifableSetupations(AutoMock mock)
+        private static void SetUpVerifiableExpectations(AutoMock mock)
         {
             mock.Mock<IServiceB>().Setup(x => x.RunB()).Verifiable();
             mock.Mock<IServiceA>().Setup(x => x.RunA()).Verifiable();
@@ -465,31 +480,31 @@ namespace Autofac.Extras.Moq.Test
 
         public class ConcreteTypeWithoutDefaultConstructor
         {
-            private ClassA _dependency;
+            private readonly ClassA _dependency;
 
             public ConcreteTypeWithoutDefaultConstructor(ClassA dependency)
             {
-                this._dependency = dependency;
+                _dependency = dependency;
             }
         }
 
         public class ConsumesDisposable
         {
-            private IInheritFromDisposable _disposable;
+            private readonly IInheritFromDisposable _disposable;
 
             public ConsumesDisposable(IInheritFromDisposable disposable)
             {
-                this._disposable = disposable;
+                _disposable = disposable;
             }
         }
 
         public class DisposesDisposable : IDisposable
         {
-            private IInheritFromDisposable _disposable;
+            private readonly IInheritFromDisposable _disposable;
 
             public DisposesDisposable(IInheritFromDisposable disposable)
             {
-                this._disposable = disposable;
+                _disposable = disposable;
             }
 
             public bool Disposed { get; private set; } = false;
@@ -501,32 +516,32 @@ namespace Autofac.Extras.Moq.Test
 
             public void DisposeDependency()
             {
-                this._disposable.Dispose();
+                _disposable.Dispose();
             }
         }
 
         public class RequiresAConcreteDisposableType
         {
-            private readonly DisposesDisposable disposesDisposable;
+            private readonly DisposesDisposable _disposesDisposable;
 
             public RequiresAConcreteDisposableType(DisposesDisposable disposesDisposable)
             {
-                this.disposesDisposable = disposesDisposable;
+                _disposesDisposable = disposesDisposable;
             }
 
-            public bool DependencyDisposed => disposesDisposable.Disposed;
+            public bool DependencyDisposed => _disposesDisposable.Disposed;
         }
 
         public class ConsumesConcreteTypeWithoutDefaultConstructor
         {
-            private ConcreteTypeWithoutDefaultConstructor _dependency;
+            private readonly ConcreteTypeWithoutDefaultConstructor _dependency;
 
             public ConsumesConcreteTypeWithoutDefaultConstructor(ConcreteTypeWithoutDefaultConstructor dependency)
             {
                 // Issue #15
                 // The dependency chain here is important because the test involves verifying
                 // that mocking can handle downstream concrete types that don't have default dependencies.
-                this._dependency = dependency;
+                _dependency = dependency;
             }
         }
 
@@ -552,14 +567,14 @@ namespace Autofac.Extras.Moq.Test
 
             public TestComponent(IServiceA serviceA, IServiceB serviceB)
             {
-                this._serviceA = serviceA;
-                this._serviceB = serviceB;
+                _serviceA = serviceA;
+                _serviceB = serviceB;
             }
 
             public void RunAll()
             {
-                this._serviceA.RunA();
-                this._serviceB.RunB();
+                _serviceA.RunA();
+                _serviceB.RunB();
             }
         }
 
@@ -569,7 +584,7 @@ namespace Autofac.Extras.Moq.Test
         {
             public TestComponentRequiringAbstractClassA(AbstractClassA abstractClassA)
             {
-                this.InstanceOfAbstractClassA = abstractClassA;
+                InstanceOfAbstractClassA = abstractClassA;
             }
 
             public AbstractClassA InstanceOfAbstractClassA { get; }
@@ -581,7 +596,7 @@ namespace Autofac.Extras.Moq.Test
         {
             public TestComponentRequiringClassA(ClassA classA)
             {
-                this.InstanceOfClassA = classA;
+                InstanceOfClassA = classA;
             }
 
             public ClassA InstanceOfClassA { get; }

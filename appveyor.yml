@@ -7,8 +7,6 @@ dotnet_csproj:
 
 configuration: Release
 
-os: Visual Studio 2019
-
 environment:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_XMLDOC_MODE: skip

@@ -367,6 +367,21 @@ namespace Autofac.Extras.Moq.Test
             }
         }
 
+        [Fact]
+        public void ResolveInChildScope()
+        {
+            using (var mock = AutoMock.GetLoose())
+            {
+                mock.Mock<IDependency>().Setup(o => o.DoSomethingExternal()).Returns(1);
+                var rootScope = mock.Container;
+                var childScope = rootScope.BeginLifetimeScope();
+
+                var resolvedObject = childScope.Resolve<IDependency>();
+
+                Assert.Equal(1, resolvedObject.DoSomethingExternal());
+            }
+        }
+
         public class ClassWithDependency
         {
             private readonly IDependency _dependency;

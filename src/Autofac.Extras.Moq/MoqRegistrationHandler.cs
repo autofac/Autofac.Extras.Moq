@@ -95,7 +95,7 @@ namespace Autofac.Extras.Moq
                 {
                     result = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService))
                                              .As(service)
-                                             .InstancePerLifetimeScope()
+                                             .SingleInstance()
                                              .ExternallyOwned()
                                              .CreateRegistration();
                 }

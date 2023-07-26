@@ -3,9 +3,17 @@
     "actnars",
     "autofac",
     "codecov",
+    "cref",
+    "inheritdoc",
+    "langword",
+    "paramref",
+    "seealso",
+    "startable",
+    "typeparam",
     "xunit"
   ],
   "dotnet-test-explorer.testProjectPath": "test/**/*Test.csproj",
+  "dotnet.defaultSolution": "Autofac.Extras.Moq.sln",
   "omnisharp.enableEditorConfigSupport": true,
   "omnisharp.enableRoslynAnalyzers": true
 }

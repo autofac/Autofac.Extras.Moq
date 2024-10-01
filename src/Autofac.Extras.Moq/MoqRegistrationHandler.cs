@@ -19,7 +19,13 @@ internal class MoqRegistrationHandler : IRegistrationSource
     private readonly ISet<Type> _createdServiceTypes;
     private readonly ISet<Type> _mockedServiceTypes;
 
-    private readonly MethodInfo _createMethod;
+    /// <summary>
+    /// This is <see cref="MockFactory.Create{T}()"/> with zero parameters. This
+    /// is important because it limits what can be auto-mocked. (MockFactory got
+    /// renamed to MockRepository but the method reference is still internally
+    /// on MockFactory.)
+    /// </summary>
+    private readonly MethodInfo _createMethod = typeof(MockRepository).GetMethod(nameof(MockRepository.Create), Array.Empty<Type>()) ?? throw new NotSupportedException("Unable to bind to Create method.");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
@@ -30,11 +36,6 @@ internal class MoqRegistrationHandler : IRegistrationSource
     {
         _createdServiceTypes = createdServiceTypes;
         _mockedServiceTypes = mockedServiceTypes;
-
-        // This is MockRepository.Create<T>() with zero parameters. This is important because
-        // it limits what can be auto-mocked.
-        var factoryType = typeof(MockRepository);
-        _createMethod = factoryType.GetMethod(nameof(MockRepository.Create), Array.Empty<Type>());
     }
 
     /// <summary>
@@ -215,13 +216,13 @@ internal class MoqRegistrationHandler : IRegistrationSource
         try
         {
             var specificCreateMethod = _createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
-            var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null);
+            var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null)!;
             return mock.Object;
         }
         catch (TargetInvocationException ex)
         {
             // Expose the inner exception as if it was directly thrown.
-            ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+            ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
 
             // Won't get here, but the compiler doesn't know that.
             throw ex.InnerException;

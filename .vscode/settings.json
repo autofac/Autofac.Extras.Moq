@@ -12,8 +12,29 @@
     "typeparam",
     "xunit"
   ],
-  "dotnet-test-explorer.testProjectPath": "test/**/*Test.csproj",
+  "coverage-gutters.coverageBaseDir": "artifacts/coverage",
+  "coverage-gutters.coverageFileNames": [
+    "coverage.net6.0.info"
+  ],
+  "dotnet-test-explorer.runInParallel": true,
+  "dotnet-test-explorer.testProjectPath": "test/**/*.Test.csproj",
   "dotnet.defaultSolution": "Autofac.Extras.Moq.sln",
-  "omnisharp.enableEditorConfigSupport": true,
-  "omnisharp.enableRoslynAnalyzers": true
+  "dotnet.preferRuntimeFromSDK": true,
+  "dotnet.unitTestDebuggingOptions": {
+    "enableStepFiltering": false,
+    "justMyCode": false,
+    "requireExactSource": false,
+    "sourceLinkOptions": {
+      "*": {
+        "enabled": true
+      }
+    },
+    "suppressJITOptimizations": true,
+    "symbolOptions": {
+      "searchNuGetOrgSymbolServer": true
+    }
+  },
+  "files.watcherExclude": {
+    "**/target": true
+  }
 }

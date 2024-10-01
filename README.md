@@ -9,6 +9,9 @@ Please file issues and pull requests for this package in this repository rather 
 - [Documentation](https://autofac.readthedocs.io/en/latest/integration/moq.html)
 - [NuGet](https://www.nuget.org/packages/Autofac.Extras.Moq)
 - [Contributing](https://autofac.readthedocs.io/en/latest/contributors.html)
+- [Open in Visual Studio Code](https://open.vscode.dev/autofac/Autofac.Extras.Moq)
+
+> :warning: **LOOKING FOR AN OWNER!** This package is largely in maintenance mode - if you'd like to help the community out and pull it out of maintenance mode, [come drop us a line!](https://github.com/autofac/Autofac.Extras.Moq/issues/50)
 
 ## Quick Start
 

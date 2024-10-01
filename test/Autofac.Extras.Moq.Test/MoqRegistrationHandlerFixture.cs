@@ -35,8 +35,8 @@ public class MoqRegistrationHandlerFixture
 
         Assert.NotEmpty(registrations);
 
-        createdServiceTypes.Add(typeof(TestAbstractClass));
-        registrations = handler.RegistrationsFor(new TypedService(typeof(TestAbstractClass)), s => Enumerable.Empty<ServiceRegistration>());
+        createdServiceTypes.Add(typeof(TestImplementationOneB));
+        registrations = handler.RegistrationsFor(new TypedService(typeof(TestImplementationOneB)), s => Enumerable.Empty<ServiceRegistration>());
 
         Assert.NotEmpty(registrations);
     }

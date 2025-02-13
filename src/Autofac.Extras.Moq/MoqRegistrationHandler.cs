@@ -1,4 +1,4 @@
-// Copyright (c) Autofac Project. All rights reserved.
+﻿// Copyright (c) Autofac Project. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Reflection;
@@ -148,7 +148,8 @@ internal class MoqRegistrationHandler : IRegistrationSource
                serviceType != typeof(string) &&
                !serviceType.IsSubclassOf(typeof(Delegate)) &&
                !serviceType.IsAbstract &&
-               !serviceType.IsGenericTypeDefinition;
+               !serviceType.IsGenericTypeDefinition &&
+               serviceType.GetConstructors(BindingFlags.Instance | BindingFlags.Public).Length > 0;
     }
 
     private static bool ServiceCompatibleWithMockRepositoryCreate(IServiceWithType typedService)

@@ -76,6 +76,14 @@ public class MoqRegistrationHandlerFixture
     }
 
     [Fact]
+    public void RegistrationsForSealedConcreteClassWithPrivateConstructor_IsNotHandled()
+    {
+        var registrations = GetRegistrations<TestSealedClassPrivateConstructor>();
+
+        Assert.Empty(registrations);
+    }
+
+    [Fact]
     public void RegistrationsForAbstractClass_IsHandled()
     {
         var registrations = GetRegistrations<TestAbstractClass>();

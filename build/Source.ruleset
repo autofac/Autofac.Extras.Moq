@@ -4,6 +4,8 @@
   <Rules AnalyzerId="Microsoft.Usage" RuleNamespace="Microsoft.Usage">
     <!-- Do not directly await a task without calling ConfigureAwait - we need the context for HttpContext.Current and other context propagation. -->
     <Rule Id="CA2007" Action="None" />
+    <!-- Use concrete type instead of interface for parameter - interface is needed for API compatibility. -->
+    <Rule Id="CA1859" Action="None" />
     <!-- Use ArgumentNullException.ThrowIfNull instead of if/throw - netstandard2.0 and netstandard2.1 don't have ArgumentNullException.ThrowIfNull. -->
     <Rule Id="CA1510" Action="None" />
     <!-- Implement serialization constructors - false positive when building .NET Core -->

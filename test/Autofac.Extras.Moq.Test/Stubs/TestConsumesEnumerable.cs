@@ -5,7 +5,10 @@ namespace Autofac.Extras.Moq.Test.Stubs;
 
 public class TestConsumesEnumerable
 {
-    public IEnumerable<ITestInterfaceOne> All { get; }
+    public IEnumerable<ITestInterfaceOne> All
+    {
+        get;
+    }
 
     public TestConsumesEnumerable(IEnumerable<ITestInterfaceOne> all)
     {

@@ -10,5 +10,8 @@ public sealed class TestConsumesAbstractClass
         InstanceOfAbstractClass = abstractClass;
     }
 
-    public TestAbstractClass InstanceOfAbstractClass { get; }
+    public TestAbstractClass InstanceOfAbstractClass
+    {
+        get;
+    }
 }

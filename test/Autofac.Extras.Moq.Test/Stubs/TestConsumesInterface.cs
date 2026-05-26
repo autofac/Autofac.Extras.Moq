@@ -10,5 +10,8 @@ public class TestConsumesInterface
         Dependency = dependency;
     }
 
-    public ITestInterfaceOne Dependency { get; }
+    public ITestInterfaceOne Dependency
+    {
+        get;
+    }
 }

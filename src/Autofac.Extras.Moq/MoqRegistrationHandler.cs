@@ -122,7 +122,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
         return new[] { result };
     }
 
-    private static bool IsIEnumerable(IServiceWithType typedService)
+    private static bool IsIEnumerable(TypedService typedService)
     {
         // We handle most generics, but we don't handle IEnumerable because that has special
         // meaning in Autofac
@@ -130,17 +130,17 @@ internal class MoqRegistrationHandler : IRegistrationSource
                typedService.ServiceType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>);
     }
 
-    private static bool IsIStartable(IServiceWithType typedService)
+    private static bool IsIStartable(TypedService typedService)
     {
         return typeof(IStartable).IsAssignableFrom(typedService.ServiceType);
     }
 
-    private static bool IsInsideAutofac(IServiceWithType typedService)
+    private static bool IsInsideAutofac(TypedService typedService)
     {
         return typeof(IRegistrationSource).Assembly == typedService.ServiceType.Assembly;
     }
 
-    private static bool ServiceCompatibleWithAutomaticDirectRegistration(IServiceWithType typedService)
+    private static bool ServiceCompatibleWithAutomaticDirectRegistration(TypedService typedService)
     {
         var serviceType = typedService.ServiceType;
 
@@ -151,7 +151,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
                !serviceType.IsGenericTypeDefinition;
     }
 
-    private static bool ServiceCompatibleWithMockRepositoryCreate(IServiceWithType typedService)
+    private static bool ServiceCompatibleWithMockRepositoryCreate(TypedService typedService)
     {
         var serverTypeInfo = typedService.ServiceType.GetTypeInfo();
 
@@ -163,7 +163,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
                 typedService.ServiceType.GetConstructors().Any(c => c.GetParameters().Length == 0));
     }
 
-    private static bool ShouldMockService(IServiceWithType typedService)
+    private static bool ShouldMockService(TypedService typedService)
     {
         return !IsIEnumerable(typedService) &&
                !IsIStartable(typedService) &&
@@ -173,12 +173,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
                !IsMeta(typedService);
     }
 
-    private bool ServiceManuallyCreated(IServiceWithType typedService)
-    {
-        return _createdServiceTypes.Contains(typedService.ServiceType);
-    }
-
-    private static bool IsLazy(IServiceWithType typedService)
+    private static bool IsLazy(TypedService typedService)
     {
         // We handle most generics, but we don't handle Lazy because that has special
         // meaning in Autofac
@@ -187,7 +182,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
                typeInfo.GetGenericTypeDefinition() == typeof(Lazy<>);
     }
 
-    private static bool IsOwned(IServiceWithType typedService)
+    private static bool IsOwned(TypedService typedService)
     {
         // We handle most generics, but we don't handle Owned because that has special
         // meaning in Autofac
@@ -195,12 +190,17 @@ internal class MoqRegistrationHandler : IRegistrationSource
         return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Owned<>);
     }
 
-    private static bool IsMeta(IServiceWithType typedService)
+    private static bool IsMeta(TypedService typedService)
     {
         // We handle most generics, but we don't handle Meta because that has special
         // meaning in Autofac
         var typeInfo = typedService.ServiceType.GetTypeInfo();
         return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Meta<>);
+    }
+
+    private bool ServiceManuallyCreated(TypedService typedService)
+    {
+        return _createdServiceTypes.Contains(typedService.ServiceType);
     }
 
     /// <summary>

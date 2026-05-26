@@ -11,10 +11,10 @@ namespace Autofac.Extras.Moq;
 /// </summary>
 public class AutoMock : IDisposable
 {
-    private bool _disposed;
-
     private readonly HashSet<Type> _createdServiceTypes = new();
     private readonly HashSet<Type> _mockedServiceTypes = new();
+
+    private bool _disposed;
 
     private AutoMock(MockBehavior behavior, Action<ContainerBuilder>? beforeBuild)
         : this(new MockRepository(behavior), beforeBuild)
@@ -50,12 +50,18 @@ public class AutoMock : IDisposable
     /// <summary>
     /// Gets the <see cref="IContainer"/> that handles the component resolution.
     /// </summary>
-    public IContainer Container { get; private set; }
+    public IContainer Container
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the <see cref="MockRepository"/> instance responsible for expectations and mocks.
     /// </summary>
-    public MockRepository MockRepository { get; private set; }
+    public MockRepository MockRepository
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether all mocks are verified.
@@ -64,7 +70,10 @@ public class AutoMock : IDisposable
     /// <see langword="true" /> to verify all mocks; <see langword="false" />
     /// (default) to verify only mocks marked Verifiable.
     /// </value>
-    public bool VerifyAll { get; set; }
+    public bool VerifyAll
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Create new <see cref="AutoMock"/> instance that will create mocks with behavior defined by a repository.
@@ -177,25 +186,6 @@ public class AutoMock : IDisposable
         return obj.Mock;
     }
 
-    private object Create(bool isMock, Type serviceType, params Parameter[] parameters)
-    {
-        if (isMock)
-        {
-            _mockedServiceTypes.Add(serviceType);
-        }
-        else
-        {
-            _createdServiceTypes.Add(serviceType);
-        }
-
-        return Container.Resolve(serviceType, parameters);
-    }
-
-    private T Create<T>(bool isMock, params Parameter[] parameters)
-    {
-        return (T)Create(isMock, typeof(T), parameters);
-    }
-
     /// <summary>
     /// Handles disposal of managed and unmanaged resources.
     /// </summary>
@@ -233,5 +223,24 @@ public class AutoMock : IDisposable
 
             _disposed = true;
         }
+    }
+
+    private object Create(bool isMock, Type serviceType, params Parameter[] parameters)
+    {
+        if (isMock)
+        {
+            _mockedServiceTypes.Add(serviceType);
+        }
+        else
+        {
+            _createdServiceTypes.Add(serviceType);
+        }
+
+        return Container.Resolve(serviceType, parameters);
+    }
+
+    private T Create<T>(bool isMock, params Parameter[] parameters)
+    {
+        return (T)Create(isMock, typeof(T), parameters);
     }
 }

@@ -10,5 +10,8 @@ public sealed class TestConsumesConcreteClass
         InstanceOfClassA = classA;
     }
 
-    public TestImplementationOneA InstanceOfClassA { get; }
+    public TestImplementationOneA InstanceOfClassA
+    {
+        get;
+    }
 }

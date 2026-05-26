@@ -319,7 +319,7 @@ public class AutoMockFixture
     [Fact]
     public void CreateClassWithParameter()
     {
-        using (AutoMock autoMock = AutoMock.GetStrict())
+        using (var autoMock = AutoMock.GetStrict())
         {
             var obj = autoMock.Create<ClassWithParameters>(new NamedParameter("param1", 10));
             Assert.NotNull(obj);
@@ -394,7 +394,10 @@ public class AutoMockFixture
 
     internal class ClassWithParameters
     {
-        public bool InvokedSimpleConstructor { get; }
+        public bool InvokedSimpleConstructor
+        {
+            get;
+        }
 
         public ClassWithParameters(int param1)
             : this(param1, TimeSpan.Zero)
@@ -426,7 +429,10 @@ public class AutoMockFixture
             _disposable = disposable;
         }
 
-        public bool Disposed { get; private set; }
+        public bool Disposed
+        {
+            get; private set;
+        }
 
         public void Dispose()
         {

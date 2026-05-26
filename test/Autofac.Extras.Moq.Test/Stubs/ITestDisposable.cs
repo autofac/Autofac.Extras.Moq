@@ -5,5 +5,8 @@ namespace Autofac.Extras.Moq.Test.Stubs;
 
 public interface ITestDisposable : IDisposable
 {
-    bool Disposed { get; }
+    bool Disposed
+    {
+        get;
+    }
 }

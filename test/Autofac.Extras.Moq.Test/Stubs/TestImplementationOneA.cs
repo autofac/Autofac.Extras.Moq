@@ -5,7 +5,10 @@ namespace Autofac.Extras.Moq.Test.Stubs;
 
 public class TestImplementationOneA : ITestInterfaceOne
 {
-    public bool WasRun { get; private set; }
+    public bool WasRun
+    {
+        get; private set;
+    }
 
     public int DoWork() => 0;
 

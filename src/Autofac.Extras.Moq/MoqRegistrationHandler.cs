@@ -215,7 +215,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
     {
         try
         {
-            var specificCreateMethod = _createMethod.MakeGenericMethod(new[] { typedService.ServiceType });
+            var specificCreateMethod = _createMethod.MakeGenericMethod(typedService.ServiceType);
             var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null)!;
             return mock.Object;
         }

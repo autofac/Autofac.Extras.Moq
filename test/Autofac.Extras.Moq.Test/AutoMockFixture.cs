@@ -40,7 +40,8 @@ public class AutoMockFixture
         using (var env = AutoMock.GetLoose())
         {
             // Shouldn't throw on resolve.
-            var sut = env.Create<ConsumesConcreteTypeWithoutDefaultConstructor>();
+            var exception = Record.Exception(() => env.Create<ConsumesConcreteTypeWithoutDefaultConstructor>());
+            Assert.Null(exception);
         }
     }
 
@@ -49,7 +50,8 @@ public class AutoMockFixture
     {
         using (var mock = AutoMock.GetLoose())
         {
-            RunWithSingleExpectationTest(mock);
+            var exception = Record.Exception(() => RunWithSingleExpectationTest(mock));
+            Assert.Null(exception);
         }
     }
 
@@ -58,7 +60,8 @@ public class AutoMockFixture
     {
         using (var mock = AutoMock.GetLoose())
         {
-            RunTest(mock);
+            var exception = Record.Exception(() => RunTest(mock));
+            Assert.Null(exception);
         }
     }
 
@@ -69,7 +72,8 @@ public class AutoMockFixture
         {
             // Should not throw on dispose of AutoMock.
             mock.Mock<ITestDisposable>().Setup(x => x.Dispose());
-            var sut = mock.Create<ConsumesDisposable>();
+            var exception = Record.Exception(() => mock.Create<ConsumesDisposable>());
+            Assert.Null(exception);
         }
     }
 
@@ -80,7 +84,8 @@ public class AutoMockFixture
         {
             // No setup for strict mock on IDisposable
             // Should not throw on dispose of AutoMock.
-            var sut = mock.Create<ConsumesDisposable>();
+            var exception = Record.Exception(() => mock.Create<ConsumesDisposable>());
+            Assert.Null(exception);
         }
     }
 
@@ -104,7 +109,8 @@ public class AutoMockFixture
             var sut = mock.Create<DisposesDisposable>();
 
             // No throw
-            sut.DisposeDependency();
+            var exception = Record.Exception(() => sut.DisposeDependency());
+            Assert.Null(exception);
         }
     }
 
@@ -112,12 +118,16 @@ public class AutoMockFixture
     public void DisposableDoesNotThrowWhenContainerIsDisposedWhenRegisteredManually()
     {
         var mock = new Mock<IDisposable>(MockBehavior.Strict);
-        using (var autoMock = AutoMock.GetStrict(cfg => cfg.RegisterMock(mock)))
+        var exception = Record.Exception(() =>
         {
-            var sut = autoMock.Create<ConsumesDisposable>();
+            using (var autoMock = AutoMock.GetStrict(cfg => cfg.RegisterMock(mock)))
+            {
+                autoMock.Create<ConsumesDisposable>();
 
-            // no throw.
-        }
+                // no throw.
+            }
+        });
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -139,7 +149,8 @@ public class AutoMockFixture
     {
         using (var mock = AutoMock.GetFromRepository(new MockRepository(MockBehavior.Loose)))
         {
-            RunWithSingleExpectationTest(mock);
+            var exception = Record.Exception(() => RunWithSingleExpectationTest(mock));
+            Assert.Null(exception);
         }
     }
 
@@ -157,17 +168,22 @@ public class AutoMockFixture
     {
         using (var loose = AutoMock.GetLoose())
         {
-            RunWithSingleExpectationTest(loose);
+            var exception = Record.Exception(() => RunWithSingleExpectationTest(loose));
+            Assert.Null(exception);
         }
     }
 
     [Fact]
     public void NormalExpectationsAreNotVerifiedByDefault()
     {
-        using (var mock = AutoMock.GetLoose())
+        var exception = Record.Exception(() =>
         {
-            SetUpExpectations(mock);
-        }
+            using (var mock = AutoMock.GetLoose())
+            {
+                SetUpExpectations(mock);
+            }
+        });
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -235,7 +251,8 @@ public class AutoMockFixture
     {
         using (var strict = AutoMock.GetStrict())
         {
-            RunTest(strict);
+            var exception = Record.Exception(() => RunTest(strict));
+            Assert.Null(exception);
         }
     }
 
@@ -266,7 +283,8 @@ public class AutoMockFixture
         using (var mock = AutoMock.GetLoose())
         {
             mock.VerifyAll = true;
-            RunTest(mock);
+            var exception = Record.Exception(() => RunTest(mock));
+            Assert.Null(exception);
         }
     }
 

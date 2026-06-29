@@ -399,6 +399,37 @@ public class AutoMockFixture
     }
 
     [Fact]
+    public void MockWithParameterSelectsTheConstructorTheParametersSatisfy()
+    {
+        // Issue #42 - when the type has multiple constructors, the supplied
+        // parameters should select the constructor they can fully satisfy. The
+        // string parameter cannot satisfy the (int) constructor, so the (string)
+        // constructor is chosen.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithMultipleConstructors>(new TypedParameter(typeof(string), "hello"));
+
+            Assert.Equal("hello", abstractMock.Object.Text);
+            Assert.Equal(0, abstractMock.Object.Number);
+        }
+    }
+
+    [Fact]
+    public void MockWithUnsatisfiableParameterFallsBackToParameterlessCreation()
+    {
+        // Issue #42 - when the supplied parameters don't satisfy any constructor
+        // with arguments, mock creation falls back to the parameterless path. An
+        // interface has no constructor to satisfy, so the parameter is ignored.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var interfaceMock = mock.Mock<ITestInterfaceOne>(new TypedParameter(typeof(int), 5));
+            interfaceMock.Setup(x => x.DoWork()).Returns(7);
+
+            Assert.Equal(7, interfaceMock.Object.DoWork());
+        }
+    }
+
+    [Fact]
     public void MockedClassWithConstructorThrows()
     {
         using (var mock = AutoMock.GetLoose())
@@ -491,6 +522,31 @@ public class AutoMockFixture
         }
 
         public int Param
+        {
+            get;
+        }
+
+        public abstract int DoThing();
+    }
+
+    public abstract class AbstractTypeWithMultipleConstructors
+    {
+        protected AbstractTypeWithMultipleConstructors(int number)
+        {
+            Number = number;
+        }
+
+        protected AbstractTypeWithMultipleConstructors(string text)
+        {
+            Text = text;
+        }
+
+        public int Number
+        {
+            get;
+        }
+
+        public string? Text
         {
             get;
         }

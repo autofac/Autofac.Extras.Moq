@@ -28,6 +28,14 @@ internal class MoqRegistrationHandler : IRegistrationSource
     private readonly MethodInfo _createMethod = typeof(MockRepository).GetMethod(nameof(MockRepository.Create), Array.Empty<Type>()) ?? throw new NotSupportedException("Unable to bind to Create method.");
 
     /// <summary>
+    /// This is <see cref="MockFactory.Create{T}(object[])"/> which forwards
+    /// constructor arguments to the mocked type. It is used when the caller
+    /// supplies parameters (issue #42) so abstract/class mocks can be created
+    /// using a constructor that takes arguments.
+    /// </summary>
+    private readonly MethodInfo _createWithArgsMethod = typeof(MockRepository).GetMethod(nameof(MockRepository.Create), new[] { typeof(object[]) }) ?? throw new NotSupportedException("Unable to bind to Create method with constructor arguments.");
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MoqRegistrationHandler"/> class.
     /// </summary>
     /// <param name="createdServiceTypes">A set of root services that have been created.</param>
@@ -90,7 +98,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
             // This will ensure mocking exceptions get properly thrown.
             if (_mockedServiceTypes.Contains(typedService.ServiceType) || ServiceCompatibleWithMockRepositoryCreate(typedService))
             {
-                result = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService))
+                result = RegistrationBuilder.ForDelegate((c, p) => CreateMock(c, typedService, p))
                                          .As(service)
                                          .SingleInstance()
                                          .ExternallyOwned()
@@ -198,6 +206,98 @@ internal class MoqRegistrationHandler : IRegistrationSource
         return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Meta<>);
     }
 
+    /// <summary>
+    /// Maps the supplied Autofac parameters onto the constructor arguments of
+    /// the type being mocked. Supports <see cref="TypedParameter"/>,
+    /// <see cref="NamedParameter"/> and <see cref="PositionalParameter"/> (and
+    /// any other <see cref="Parameter"/>) by delegating to the same
+    /// <see cref="Parameter.CanSupplyValue"/> logic Autofac uses for normal
+    /// constructor injection.
+    /// </summary>
+    /// <param name="serviceType">The type being mocked.</param>
+    /// <param name="parameters">The parameters supplied by the caller.</param>
+    /// <param name="context">The component context used to resolve values.</param>
+    /// <returns>
+    /// The constructor arguments in positional order, or an empty array if no
+    /// constructor can be fully satisfied by the supplied parameters.
+    /// </returns>
+    private static object?[] BuildConstructorArguments(Type serviceType, Parameter[] parameters, IComponentContext context)
+    {
+        // Include non-public constructors: abstract classes commonly expose a
+        // protected constructor, and Moq/Castle can use it.
+        var constructors = serviceType.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        object?[]? bestMatch = null;
+
+        foreach (var constructor in constructors)
+        {
+            var constructorParameters = constructor.GetParameters();
+
+            // Prefer the constructor with the most parameters that can be fully
+            // satisfied by the supplied values.
+            if (constructorParameters.Length > (bestMatch?.Length ?? 0) &&
+                TryBuildArguments(constructorParameters, parameters, context, out var arguments))
+            {
+                bestMatch = arguments;
+            }
+        }
+
+        return bestMatch ?? Array.Empty<object?>();
+    }
+
+    /// <summary>
+    /// Attempts to build the positional argument list for a single constructor
+    /// from the supplied parameters.
+    /// </summary>
+    /// <param name="constructorParameters">The constructor's parameters.</param>
+    /// <param name="parameters">The parameters supplied by the caller.</param>
+    /// <param name="context">The component context used to resolve values.</param>
+    /// <param name="arguments">The resolved positional arguments, if successful.</param>
+    /// <returns>
+    /// <see langword="true" /> if every constructor parameter could be supplied
+    /// a value; otherwise <see langword="false" />.
+    /// </returns>
+    private static bool TryBuildArguments(ParameterInfo[] constructorParameters, Parameter[] parameters, IComponentContext context, out object?[] arguments)
+    {
+        arguments = new object?[constructorParameters.Length];
+
+        for (var i = 0; i < constructorParameters.Length; i++)
+        {
+            if (!TrySupplyValue(constructorParameters[i], parameters, context, out arguments[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Finds the first supplied parameter able to provide a value for the given
+    /// constructor parameter.
+    /// </summary>
+    /// <param name="constructorParameter">The constructor parameter to satisfy.</param>
+    /// <param name="parameters">The parameters supplied by the caller.</param>
+    /// <param name="context">The component context used to resolve values.</param>
+    /// <param name="value">The resolved value, if one was supplied.</param>
+    /// <returns>
+    /// <see langword="true" /> if a value was supplied; otherwise <see langword="false" />.
+    /// </returns>
+    private static bool TrySupplyValue(ParameterInfo constructorParameter, Parameter[] parameters, IComponentContext context, out object? value)
+    {
+        foreach (var parameter in parameters)
+        {
+            if (parameter.CanSupplyValue(constructorParameter, context, out var valueProvider))
+            {
+                value = valueProvider();
+                return true;
+            }
+        }
+
+        value = null;
+        return false;
+    }
+
     private bool ServiceManuallyCreated(TypedService typedService)
     {
         return _createdServiceTypes.Contains(typedService.ServiceType);
@@ -208,15 +308,38 @@ internal class MoqRegistrationHandler : IRegistrationSource
     /// </summary>
     /// <param name="context">The component context.</param>
     /// <param name="typedService">The typed service.</param>
+    /// <param name="parameters">
+    /// The parameters supplied when the mock was requested. When present, they
+    /// are forwarded as constructor arguments to the mocked type (issue #42).
+    /// </param>
     /// <returns>
     /// The mock object from the repository.
     /// </returns>
-    private object CreateMock(IComponentContext context, TypedService typedService)
+    private object CreateMock(IComponentContext context, TypedService typedService, IEnumerable<Parameter> parameters)
     {
         try
         {
-            var specificCreateMethod = _createMethod.MakeGenericMethod(typedService.ServiceType);
-            var mock = (Mock)specificCreateMethod.Invoke(context.Resolve<MockRepository>(), null)!;
+            var repository = context.Resolve<MockRepository>();
+            var parameterArray = parameters as Parameter[] ?? parameters.ToArray();
+            var constructorArguments = parameterArray.Length == 0
+                ? Array.Empty<object?>()
+                : BuildConstructorArguments(typedService.ServiceType, parameterArray, context);
+
+            Mock mock;
+            if (constructorArguments.Length == 0)
+            {
+                // No usable constructor arguments: use the parameterless Create<T>()
+                // so behavior is identical to a mock requested without parameters.
+                var specificCreateMethod = _createMethod.MakeGenericMethod(typedService.ServiceType);
+                mock = (Mock)specificCreateMethod.Invoke(repository, null)!;
+            }
+            else
+            {
+                // Forward the constructor arguments to Moq's Create<T>(object[]).
+                var specificCreateMethod = _createWithArgsMethod.MakeGenericMethod(typedService.ServiceType);
+                mock = (Mock)specificCreateMethod.Invoke(repository, new object[] { constructorArguments })!;
+            }
+
             return mock.Object;
         }
         catch (TargetInvocationException ex)

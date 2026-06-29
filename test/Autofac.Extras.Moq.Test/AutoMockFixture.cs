@@ -360,6 +360,76 @@ public class AutoMockFixture
     }
 
     [Fact]
+    public void MockWithTypedParameterUsesConstructorWithArguments()
+    {
+        // Issue #42 - parameters passed to Mock<T> should be forwarded to the
+        // constructor of the mocked type.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithParameter>(new TypedParameter(typeof(int), 8));
+            abstractMock.Setup(q => q.DoThing()).Returns(16);
+
+            Assert.Equal(8, abstractMock.Object.Param);
+            Assert.Equal(16, abstractMock.Object.DoThing());
+        }
+    }
+
+    [Fact]
+    public void MockWithNamedParameterUsesConstructorWithArguments()
+    {
+        // Issue #42 - NamedParameter should map to the matching constructor parameter.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithParameter>(new NamedParameter("param", 42));
+
+            Assert.Equal(42, abstractMock.Object.Param);
+        }
+    }
+
+    [Fact]
+    public void MockWithPositionalParameterUsesConstructorWithArguments()
+    {
+        // Issue #42 - PositionalParameter should map to the constructor parameter by index.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithParameter>(new PositionalParameter(0, 99));
+
+            Assert.Equal(99, abstractMock.Object.Param);
+        }
+    }
+
+    [Fact]
+    public void MockWithParameterSelectsTheConstructorTheParametersSatisfy()
+    {
+        // Issue #42 - when the type has multiple constructors, the supplied
+        // parameters should select the constructor they can fully satisfy. The
+        // string parameter cannot satisfy the (int) constructor, so the (string)
+        // constructor is chosen.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithMultipleConstructors>(new TypedParameter(typeof(string), "hello"));
+
+            Assert.Equal("hello", abstractMock.Object.Text);
+            Assert.Equal(0, abstractMock.Object.Number);
+        }
+    }
+
+    [Fact]
+    public void MockWithUnsatisfiableParameterFallsBackToParameterlessCreation()
+    {
+        // Issue #42 - when the supplied parameters don't satisfy any constructor
+        // with arguments, mock creation falls back to the parameterless path. An
+        // interface has no constructor to satisfy, so the parameter is ignored.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var interfaceMock = mock.Mock<ITestInterfaceOne>(new TypedParameter(typeof(int), 5));
+            interfaceMock.Setup(x => x.DoWork()).Returns(7);
+
+            Assert.Equal(7, interfaceMock.Object.DoWork());
+        }
+    }
+
+    [Fact]
     public void MockedClassWithConstructorThrows()
     {
         using (var mock = AutoMock.GetLoose())
@@ -443,6 +513,46 @@ public class AutoMockFixture
     }
 
     public delegate int TestDelegate(int x);
+
+    public abstract class AbstractTypeWithParameter
+    {
+        protected AbstractTypeWithParameter(int param)
+        {
+            Param = param;
+        }
+
+        public int Param
+        {
+            get;
+        }
+
+        public abstract int DoThing();
+    }
+
+    public abstract class AbstractTypeWithMultipleConstructors
+    {
+        protected AbstractTypeWithMultipleConstructors(int number)
+        {
+            Number = number;
+        }
+
+        protected AbstractTypeWithMultipleConstructors(string text)
+        {
+            Text = text;
+        }
+
+        public int Number
+        {
+            get;
+        }
+
+        public string? Text
+        {
+            get;
+        }
+
+        public abstract int DoThing();
+    }
 
     internal class ConsumesDisposable
     {

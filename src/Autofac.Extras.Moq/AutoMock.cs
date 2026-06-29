@@ -9,6 +9,23 @@ namespace Autofac.Extras.Moq;
 /// <summary>
 /// Wrapper around <see cref="Autofac"/> and <see cref="Moq"/>.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Adding real framework services (for example, Entity Framework Core or
+/// <c>Microsoft.Extensions.Logging</c>) into the <see cref="AutoMock"/> container can
+/// produce unexpected behavior. <see cref="AutoMock"/> automatically supplies a mock
+/// for any service it can't otherwise resolve, including the individual elements of an
+/// otherwise-empty collection dependency (such as <c>IEnumerable&lt;ILoggerProvider&gt;</c>).
+/// A loosely-mocked element returns <see langword="null" /> from members that aren't
+/// explicitly set up, which can cause the consuming framework to throw - for example a
+/// <see cref="NullReferenceException"/> deep inside the framework's own code.
+/// </para>
+/// <para>
+/// If you need real framework services in your test, register concrete implementations for
+/// the services that framework consumes (or avoid mixing real framework wiring into the
+/// auto-mocking container) so that <see cref="AutoMock"/> does not fill those slots with mocks.
+/// </para>
+/// </remarks>
 public class AutoMock : IDisposable
 {
     private readonly HashSet<Type> _createdServiceTypes = new();

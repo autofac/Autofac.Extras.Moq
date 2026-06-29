@@ -1,8 +1,8 @@
 # Autofac.Extras.Moq
 
-Moq auto mocking integration for [Autofac](https://github.com/autofac/Autofac).
+Moq auto mocking integration for [Autofac](https://autofac.org).
 
-[![Build status](https://github.com/autofac/Autofac.Extras.Moq/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/autofac/Autofac.Extras.Moq/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/Autofac/Autofac.Extras.Moq/branch/develop/graph/badge.svg)](https://app.codecov.io/gh/autofac/Autofac.Extras.Moq) [![NuGet](https://img.shields.io/nuget/v/Autofac.Extras.Moq.svg)](https://nuget.org/packages/Autofac.Extras.Moq)
+[![Build status](https://github.com/autofac/Autofac.Extras.Moq/actions/workflows/main.yml/badge.svg)](https://github.com/autofac/Autofac.Extras.Moq/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Autofac/Autofac.Extras.Moq/branch/develop/graph/badge.svg)](https://codecov.io/gh/Autofac/Autofac.Extras.Moq) [![NuGet](https://img.shields.io/nuget/v/Autofac.Extras.Moq.svg)](https://nuget.org/packages/Autofac.Extras.Moq)
 
 Please file issues and pull requests for this package in this repository rather than in the Autofac core repo.
 

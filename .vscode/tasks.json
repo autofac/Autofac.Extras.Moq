@@ -1,9 +1,37 @@
 {
+  "linux": {
+    "options": {
+      "shell": {
+        "args": [
+          "-NoProfile",
+          "-Command"
+        ],
+        "executable": "pwsh"
+      }
+    }
+  },
+  "osx": {
+    "options": {
+      "shell": {
+        "args": [
+          "-NoProfile",
+          "-Command"
+        ],
+        "executable": "/usr/local/bin/pwsh"
+      }
+    }
+  },
   "tasks": [
+    {
+      "command": "If (Test-Path ${workspaceFolder}/artifacts/logs) { Remove-Item ${workspaceFolder}/artifacts/logs -Recurse -Force }; New-Item -Path ${workspaceFolder}/artifacts/logs -ItemType Directory -Force | Out-Null",
+      "label": "create log directory",
+      "type": "shell"
+    },
     {
       "args": [
         "build",
         "${workspaceFolder}/Autofac.Extras.Moq.sln",
+        "--tl:off",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -14,7 +42,7 @@
       },
       "label": "build",
       "problemMatcher": "$msCompile",
-      "type": "process"
+      "type": "shell"
     },
     {
       "args": [
@@ -23,17 +51,15 @@
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "--results-directory",
-        "\"artifacts/coverage\"",
+        "artifacts/logs",
         "--logger:trx",
-        "--filter",
-        "FullyQualifiedName!~Bench",
-        "/p:CoverletOutput=\"${workspaceFolder}/artifacts/coverage/\"",
-        "/p:CollectCoverage=true",
-        "/p:CoverletOutputFormat=lcov",
-        "/p:Exclude=\"[System.*]*\"",
-        "-m:1"
+        "--collect:XPlat Code Coverage",
+        "--settings:build/Coverage.runsettings"
       ],
       "command": "dotnet",
+      "dependsOn": [
+        "create log directory"
+      ],
       "group": {
         "isDefault": true,
         "kind": "test"
@@ -43,5 +69,18 @@
       "type": "process"
     }
   ],
-  "version": "2.0.0"
+  "version": "2.0.0",
+  "windows": {
+    "options": {
+      "shell": {
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command"
+        ],
+        "executable": "pwsh.exe"
+      }
+    }
+  }
 }

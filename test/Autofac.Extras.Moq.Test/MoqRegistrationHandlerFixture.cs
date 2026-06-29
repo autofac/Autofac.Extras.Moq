@@ -158,7 +158,7 @@ public class MoqRegistrationHandlerFixture
         Assert.Empty(registrations);
     }
 
-    private IEnumerable<IComponentRegistration> GetRegistrations<T>(Func<Service, IEnumerable<ServiceRegistration>> regAccessor = null)
+    private IEnumerable<IComponentRegistration> GetRegistrations<T>(Func<Service, IEnumerable<ServiceRegistration>>? regAccessor = null)
     {
         regAccessor ??= s => Enumerable.Empty<ServiceRegistration>();
 

@@ -62,7 +62,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Registry handles disposal")]
     public IEnumerable<IComponentRegistration> RegistrationsFor(
         Service service,
-        Func<Service, IEnumerable<ServiceRegistration>> registrationAccessor)
+        Func<Service, IEnumerable<ServiceRegistration>>? registrationAccessor)
     {
         if (service == null)
         {
@@ -74,7 +74,7 @@ internal class MoqRegistrationHandler : IRegistrationSource
         IComponentRegistration? result;
 
         // Manually registered, don't do ourselves.
-        if (typedService == null || registrationAccessor(service).Any())
+        if (typedService == null || (registrationAccessor is not null && registrationAccessor(service).Any()))
         {
             result = null;
         }

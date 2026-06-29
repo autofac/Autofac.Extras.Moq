@@ -182,8 +182,12 @@ public class AutoMock : IDisposable
     public Mock<T> Mock<T>(params Parameter[] parameters)
         where T : class
     {
-        var obj = (IMocked<T>)Create<T>(true, parameters);
-        return obj.Mock;
+        // Mock.Get retrieves the Mock<T> from Moq's internal registry rather
+        // than casting the resolved object to IMocked<T>. This is important for
+        // delegate mocks (issue #48): the Object of a delegate mock is the
+        // delegate itself and does not implement IMocked<T>, so a direct cast
+        // would throw an InvalidCastException.
+        return global::Moq.Mock.Get(Create<T>(true, parameters));
     }
 
     /// <summary>

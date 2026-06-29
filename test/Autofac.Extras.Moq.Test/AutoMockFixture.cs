@@ -346,6 +346,20 @@ public class AutoMockFixture
     }
 
     [Fact]
+    public void MockOfDelegateTypeSucceeds()
+    {
+        // Issue #48 - mocking a delegate type used to throw InvalidCastException
+        // because the delegate Object does not implement IMocked<T>.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var delegateMock = mock.Mock<TestDelegate>();
+            delegateMock.Setup(x => x(It.IsAny<int>())).Returns(20);
+
+            Assert.Equal(20, delegateMock.Object.Invoke(5));
+        }
+    }
+
+    [Fact]
     public void MockedClassWithConstructorThrows()
     {
         using (var mock = AutoMock.GetLoose())
@@ -427,6 +441,8 @@ public class AutoMockFixture
         {
         }
     }
+
+    public delegate int TestDelegate(int x);
 
     internal class ConsumesDisposable
     {

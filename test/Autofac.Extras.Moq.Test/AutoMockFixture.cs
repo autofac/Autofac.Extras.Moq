@@ -360,6 +360,45 @@ public class AutoMockFixture
     }
 
     [Fact]
+    public void MockWithTypedParameterUsesConstructorWithArguments()
+    {
+        // Issue #42 - parameters passed to Mock<T> should be forwarded to the
+        // constructor of the mocked type.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithParameter>(new TypedParameter(typeof(int), 8));
+            abstractMock.Setup(q => q.DoThing()).Returns(16);
+
+            Assert.Equal(8, abstractMock.Object.Param);
+            Assert.Equal(16, abstractMock.Object.DoThing());
+        }
+    }
+
+    [Fact]
+    public void MockWithNamedParameterUsesConstructorWithArguments()
+    {
+        // Issue #42 - NamedParameter should map to the matching constructor parameter.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithParameter>(new NamedParameter("param", 42));
+
+            Assert.Equal(42, abstractMock.Object.Param);
+        }
+    }
+
+    [Fact]
+    public void MockWithPositionalParameterUsesConstructorWithArguments()
+    {
+        // Issue #42 - PositionalParameter should map to the constructor parameter by index.
+        using (var mock = AutoMock.GetLoose())
+        {
+            var abstractMock = mock.Mock<AbstractTypeWithParameter>(new PositionalParameter(0, 99));
+
+            Assert.Equal(99, abstractMock.Object.Param);
+        }
+    }
+
+    [Fact]
     public void MockedClassWithConstructorThrows()
     {
         using (var mock = AutoMock.GetLoose())
@@ -443,6 +482,21 @@ public class AutoMockFixture
     }
 
     public delegate int TestDelegate(int x);
+
+    public abstract class AbstractTypeWithParameter
+    {
+        protected AbstractTypeWithParameter(int param)
+        {
+            Param = param;
+        }
+
+        public int Param
+        {
+            get;
+        }
+
+        public abstract int DoThing();
+    }
 
     internal class ConsumesDisposable
     {
